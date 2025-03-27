@@ -18,12 +18,12 @@ import { songs } from '../data/songs';
 const { width } = Dimensions.get('window');
 
 const ListeningScreen = ({ navigation, route }) => {
-  const { song } = route.params;
+  const { song: initialSong, playlist = [], currentIndex = 0, shouldAutoPlay = false } = route.params || {};
   const [isPlaying, setIsPlaying] = useState(false);
   const [sound, setSound] = useState(null);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [currentSong, setCurrentSong] = useState(song);
+  const [currentSong, setCurrentSong] = useState(initialSong);
   const [isLiked, setIsLiked] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
@@ -66,6 +66,19 @@ const ListeningScreen = ({ navigation, route }) => {
       return () => clearInterval(interval);
     }
   }, [sound, isPlaying]);
+
+  useEffect(() => {
+    if (shouldAutoPlay && currentSong) {
+      loadAudio();
+      playSound();
+    }
+  }, [currentSong, shouldAutoPlay]);
+
+  useEffect(() => {
+    if (initialSong) {
+      setCurrentSong(initialSong);
+    }
+  }, [initialSong]);
 
   const setupAudio = async () => {
     try {
@@ -172,26 +185,28 @@ const ListeningScreen = ({ navigation, route }) => {
     setCurrentSong(songs[previousIndex]);
   };
 
+  const playSound = async () => {
+    if (sound) {
+      await sound.playAsync();
+      setIsPlaying(true);
+    }
+  };
+
   return (
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={async () => {
-              if (sound) {
-                await sound.stopAsync();
-                await sound.unloadAsync();
-                setSound(null);
-                setIsPlaying(false);
-              }
-              navigation.goBack();
-            }}
-          >
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Icon name="chevron-down" size={30} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Now Playing</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Queue')}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('Queue', {
+              playlist: route.params?.playlist || [currentSong],
+              currentSong: currentSong
+            })}
+          >
             <Icon name="list" size={24} color="#fff" />
           </TouchableOpacity>
         </View>

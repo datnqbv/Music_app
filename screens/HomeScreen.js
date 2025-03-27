@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -15,9 +16,7 @@ import { songs } from '../data/songs';
 
 const { width } = Dimensions.get('window');
 
-const HomeScreen = () => {
-  const navigation = useNavigation();
-
+const HomeScreen = ({ navigation }) => {
   // Sections data with real songs
   const newReleases = songs.slice(0, 3);
   const popularVideos = songs.slice(1, 4);
@@ -50,28 +49,33 @@ const HomeScreen = () => {
 
   return (
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
-      <ScrollView
+      {/* Fixed Header */}
+      <View style={styles.header}>
+        <View style={styles.searchContainer}>
+          <Icon name="search" size={20} color="#B0B0B0" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Track, artist, track or album"
+            placeholderTextColor="#B0B0B0"
+          />
+        </View>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notification')}
+        >
+          <Icon name="notifications-outline" size={24} color="#fff" />
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>3</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      {/* Scrollable Content */}
+      <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}
+        contentContainerStyle={styles.scrollContent}
       >
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <TouchableOpacity 
-            style={styles.searchBar}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <Icon name="search-outline" size={20} color="#666" />
-            <Text style={styles.searchText}>Track artist, track or album</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={() => navigation.navigate('Notification')}
-          >
-            <Icon name="notifications-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileLeft}>
@@ -205,42 +209,65 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingBottom: 80,
-  },
-  searchContainer: {
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 40,
+    paddingTop: 40,
+    paddingBottom: 10,
+    backgroundColor: '#4A148C',
+    zIndex: 1000,
   },
-  searchBar: {
+  searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    height: 45,
-    marginRight: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginRight: 12,
+    height: 40,
   },
-  searchText: {
+  searchInput: {
     flex: 1,
-    color: '#666',
-    marginLeft: 10,
+    color: '#fff',
+    marginLeft: 8,
     fontSize: 16,
   },
   notificationButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: 'transparent',
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  scrollView: {
+    flex: 1,
+    marginTop: 90, // Add margin to prevent content from being hidden under header
+  },
+  scrollContent: {
+    paddingTop: 10,
   },
   profileSection: {
     flexDirection: 'row',
