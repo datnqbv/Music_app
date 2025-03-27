@@ -11,46 +11,44 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const ProfileScreen = () => {
-  const navigation = useNavigation();
-
+const ProfileScreen = ({ navigation }) => {
   const menuItems = [
     {
-      id: 1,
-      icon: 'create-outline',
+      id: 'edit',
       title: 'Edit Profile',
-      onPress: () => navigation.navigate('EditProfile'),
+      icon: 'create-outline',
+      screen: 'EditProfile'
     },
     {
-      id: 2,
-      icon: 'headset-outline',
+      id: 'audio',
       title: 'Audio Quality',
-      onPress: () => {},
+      icon: 'musical-notes-outline',
+      screen: 'AudioQuality'
     },
     {
-      id: 3,
-      icon: 'videocam-outline',
+      id: 'video',
       title: 'Video Quality',
-      onPress: () => {},
+      icon: 'videocam-outline',
+      screen: 'VideoQuality'
     },
     {
-      id: 4,
-      icon: 'cloud-download-outline',
+      id: 'download',
       title: 'Download',
-      onPress: () => {},
+      icon: 'cloud-download-outline',
+      screen: 'Download'
     },
     {
-      id: 5,
-      icon: 'language-outline',
+      id: 'language',
       title: 'Language',
-      onPress: () => {},
+      icon: 'language-outline',
+      screen: 'Language'
     },
     {
-      id: 6,
-      icon: 'phone-portrait-outline',
+      id: 'storage',
       title: 'Storage',
-      onPress: () => {},
-    },
+      icon: 'phone-portrait-outline',
+      screen: 'Storage'
+    }
   ];
 
   return (
@@ -98,7 +96,12 @@ const ProfileScreen = () => {
             <TouchableOpacity
               key={item.id}
               style={styles.menuItem}
-              onPress={item.onPress}
+              onPress={() => {
+                const parentNavigation = navigation.getParent();
+                if (parentNavigation) {
+                  parentNavigation.navigate(item.screen);
+                }
+              }}
             >
               <View style={styles.menuItemLeft}>
                 <Icon name={item.icon} size={24} color="#fff" />

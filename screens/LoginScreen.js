@@ -7,6 +7,9 @@ import {
   Image,
   TextInput,
   Dimensions,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -20,74 +23,103 @@ const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isRemembered, setIsRemembered] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    let tempErrors = {};
+    if (!username) tempErrors.username = 'Tên đăng nhập không được để trống';
+    if (!password) tempErrors.password = 'Mật khẩu không được để trống';
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  const handleLogin = () => {
+    if (validate()) {
+      // Xử lý logic đăng nhập ở đây
+      navigation.navigate('Main', { screen: 'Home' });
+    } else {
+      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
+    }
+  };
 
   return (
-    <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
+        {/* Header with Back Button */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+
         {/* Logo */}
-        <View style={styles.logo}>
-          <Image 
-            source={require('../assets/logo.png')}
-            style={styles.logoImage}
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/logo.png')} // Đảm bảo file logo.png đã có trong thư mục assets
+            style={styles.logo}
             resizeMode="contain"
           />
         </View>
 
-        {/* Login Form */}
+        {/* Form */}
         <View style={styles.form}>
+          {/* Username Input */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
               placeholder="Enter Username"
-              placeholderTextColor="#666"
+              placeholderTextColor="#B0B0B0"
               value={username}
               onChangeText={setUsername}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
+            {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
           </View>
 
+          {/* Password Input */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
               placeholder="Enter Password"
-              placeholderTextColor="#666"
-              secureTextEntry={!showPassword}
+              placeholderTextColor="#B0B0B0"
               value={password}
               onChangeText={setPassword}
+              style={styles.input}
+              secureTextEntry={!showPassword}
             />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setShowPassword(!showPassword)}
-            >
-              <Icon
-                name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
+            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
+          {/* Remember Me and Forgot Password */}
           <View style={styles.rememberContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.checkboxContainer}
               onPress={() => setIsRemembered(!isRemembered)}
             >
-              <View style={[styles.checkbox, isRemembered && styles.checkboxChecked]}>
-                {isRemembered && <Icon name="checkmark" size={16} color="#fff" />}
-              </View>
+              <View style={[styles.checkbox, isRemembered && styles.checkboxChecked]} />
               <Text style={styles.rememberText}>Remember me</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('ForgetPassword')}>
-              <Text style={styles.forgotText}>Forgot Password?</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ForgetPassword')}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity 
-            style={styles.loginButton}
-            onPress={() => navigation.navigate('Main', { screen: 'Home' })}
-          >
-            <Text style={styles.loginButtonText}>Login</Text>
+          {/* Login Button */}
+          <TouchableOpacity onPress={handleLogin}>
+            <LinearGradient
+              colors={['#A78BFA', '#6A5ACD']}
+              style={styles.loginButton}
+            >
+              <Text style={styles.loginButtonText}>Login</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
+          {/* Or Divider */}
           <View style={styles.orContainer}>
             <View style={styles.orLine} />
             <Text style={styles.orText}>or</Text>
@@ -97,7 +129,7 @@ const LoginScreen = () => {
           {/* Social Login */}
           <View style={styles.socialContainer}>
             <TouchableOpacity style={[styles.socialButton, styles.googleButton]}>
-              <Image 
+              <Image
                 source={require('../assets/google-icon.png')}
                 style={styles.socialIcon}
                 resizeMode="contain"
@@ -115,12 +147,12 @@ const LoginScreen = () => {
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-              <Text style={styles.signupLink}>Sign up</Text>
+              <Text style={styles.signupLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -131,39 +163,44 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 60,
     paddingHorizontal: 30,
   },
-  logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 10,
-    justifyContent: 'center',
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  logoImage: {
+    padding: 16,
+    marginTop: Platform.OS === 'ios' ? 40 : 0,
     width: '100%',
-    height: '100%',
+  },
+  logoContainer: {
+    marginTop: 50,
+    marginBottom: 40,
+  },
+  logo: {
+    width: 150, // Điều chỉnh kích thước logo theo thiết kế
+    height: 50,
   },
   form: {
     width: '100%',
   },
   inputContainer: {
     marginBottom: 20,
-    position: 'relative',
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 25,
-    padding: 15,
-    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    color: '#FFFFFF',
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#666',
+    borderColor: '#A78BFA',
   },
-  eyeIcon: {
-    position: 'absolute',
-    right: 15,
-    top: 15,
+  errorText: {
+    color: '#FF4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
   rememberContainer: {
     flexDirection: 'row',
@@ -178,31 +215,35 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 20,
     height: 20,
-    borderWidth: 1,
-    borderColor: '#6C2FD8',
+    borderWidth: 2,
+    borderColor: '#A78BFA',
     borderRadius: 4,
     marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#6C2FD8',
+    backgroundColor: '#A78BFA',
   },
   rememberText: {
-    color: '#666',
+    color: '#FFFFFF',
+    fontSize: 14,
   },
-  forgotText: {
-    color: '#666',
+  forgotPasswordText: {
+    color: '#FF4D4D',
+    fontSize: 14,
   },
   loginButton: {
-    backgroundColor: '#6C2FD8',
+    paddingVertical: 15,
     borderRadius: 25,
-    padding: 15,
     alignItems: 'center',
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   loginButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -214,11 +255,12 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#666',
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   orText: {
-    color: '#666',
+    color: '#FFFFFF',
     paddingHorizontal: 10,
+    fontSize: 14,
   },
   socialContainer: {
     flexDirection: 'row',
@@ -227,15 +269,14 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   socialButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
   },
   googleButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
   facebookButton: {
     backgroundColor: '#1877F2',
@@ -244,18 +285,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#1DA1F2',
   },
   socialIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    marginBottom: 20,
   },
   signupText: {
-    color: '#666',
+    color: '#FFFFFF',
+    fontSize: 14,
   },
   signupLink: {
-    color: '#6C2FD8',
+    color: '#A78BFA',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

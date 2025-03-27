@@ -5,66 +5,95 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const ForgetPasswordScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    let tempErrors = {};
+    if (!email) tempErrors.email = 'Email không được để trống';
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  const handleResetPassword = () => {
+    if (validate()) {
+      // Xử lý logic quên mật khẩu ở đây
+      Alert.alert(
+        'Thành công',
+        'Link đặt lại mật khẩu đã được gửi đến email của bạn',
+        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+      );
+    } else {
+      Alert.alert('Lỗi', 'Vui lòng điền email của bạn');
+    }
+  };
 
   return (
-    <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
         {/* Header */}
-        <Text style={styles.title}>Forgot Password</Text>
-
-        {/* Description */}
-        <Text style={styles.description}>
-          Enter your email below to receive password reset instructions
-        </Text>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Forget Password</Text>
+          <View style={styles.headerPlaceholder} /> {/* Placeholder để cân bằng layout */}
+        </View>
 
         {/* Form */}
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Your email"
-            placeholderTextColor="#666"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <Text style={styles.description}>
+            Enter your email below to receive password reset instructions
+          </Text>
 
-          {/* Sign Up Button */}
-          <TouchableOpacity 
-            style={styles.signUpButton}
-            onPress={() => {
-              // Handle password reset logic here
-              navigation.navigate('Login');
-            }}
-          >
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Your email"
+              placeholderTextColor="#B0B0B0"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+          </View>
+
+          {/* Send Reset Link Button */}
+          <TouchableOpacity onPress={handleResetPassword}>
             <LinearGradient
-              colors={['#6C2FD8', '#4B2E83']}
-              style={styles.gradientButton}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              colors={['#A78BFA', '#6A5ACD']}
+              style={styles.resetButton}
             >
-              <Text style={styles.signUpButtonText}>Sign Up</Text>
+              <Text style={styles.resetButtonText}>Send Reset Link</Text>
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Back to Login */}
-          <TouchableOpacity 
-            style={styles.backButton}
+          {/* Back to Login Link */}
+          <TouchableOpacity
+            style={styles.backToLogin}
             onPress={() => navigation.navigate('Login')}
           >
-            <Text style={styles.backButtonText}>← Back to Log In Page</Text>
+            <Icon name="arrow-back-outline" size={20} color="#A78BFA" style={styles.backIcon} />
+            <Text style={styles.backToLoginText}>Back to Log In Page</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -74,57 +103,83 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    alignItems: 'center',
     paddingHorizontal: 30,
-    paddingTop: 50,
   },
-  title: {
-    color: '#fff',
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    marginTop: Platform.OS === 'ios' ? 40 : 0,
+    width: '100%',
+  },
+  headerTitle: {
+    color: '#FFFFFF',
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
   },
-  description: {
-    color: '#666',
-    fontSize: 16,
-    marginBottom: 30,
+  headerPlaceholder: {
+    width: 24, // Để cân bằng layout với nút quay lại
   },
   form: {
     width: '100%',
+    marginTop: 40,
   },
-  label: {
-    color: '#fff',
+  description: {
+    color: '#FFFFFF',
     fontSize: 16,
-    marginBottom: 10,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  inputContainer: {
+    marginBottom: 20,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 25,
-    padding: 15,
-    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    color: '#FFFFFF',
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#6C2FD8',
-    marginBottom: 30,
+    borderColor: '#A78BFA',
   },
-  signUpButton: {
-    width: '100%',
-    marginBottom: 30,
+  errorText: {
+    color: '#FF4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
-  gradientButton: {
+  resetButton: {
+    paddingVertical: 15,
     borderRadius: 25,
-    padding: 15,
     alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  signUpButtonText: {
-    color: '#fff',
+  resetButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  backButton: {
+  backToLogin: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
   },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  backIcon: {
+    marginRight: 5,
+  },
+  backToLoginText: {
+    color: '#A78BFA',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

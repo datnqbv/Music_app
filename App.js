@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { View, Text } from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
+import { View, ActivityIndicator } from 'react-native';
 
-export default function App() {
+const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Giả lập tải dữ liệu ban đầu
+    // Simulate loading time
     setTimeout(() => {
       setIsLoading(false);
     }, 2000);
@@ -15,8 +15,8 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2A1B3D' }}>
+        <ActivityIndicator size="large" color="#6A5ACD" />
       </View>
     );
   }
@@ -26,4 +26,6 @@ export default function App() {
       <AppNavigator />
     </NavigationContainer>
   );
-}
+};
+
+export default App;

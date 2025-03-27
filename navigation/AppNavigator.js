@@ -20,6 +20,12 @@ import QueueScreen from '../screens/QueueScreen';
 import MinimizeScreen from '../screens/MinimizeScreen';
 import ShareScreen from '../screens/ShareScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import AudioQualityScreen from '../screens/settings/AudioQualityScreen';
+import VideoQualityScreen from '../screens/settings/VideoQualityScreen';
+import DownloadScreen from '../screens/settings/DownloadScreen';
+import LanguageScreen from '../screens/settings/LanguageScreen';
+import StorageScreen from '../screens/settings/StorageScreen';
+import ArtistScreen from '../screens/ArtistScreen';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createStackNavigator();
@@ -82,6 +88,12 @@ const AppNavigator = () => {
       <Stack.Screen name="Minimize" component={MinimizeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Share" component={ShareScreen} options={{ headerShown: false }} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="AudioQuality" component={AudioQualityScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="VideoQuality" component={VideoQualityScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Download" component={DownloadScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Storage" component={StorageScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Artist" component={ArtistScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };
