@@ -7,133 +7,28 @@ import {
   StyleSheet,
   Image,
   Dimensions,
-  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { songs } from '../data/songs';
 
-const { width } = Dimensions.get('window'); // Lấy chiều rộng màn hình để responsive
+const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const navigation = useNavigation();
 
-  // Sections data with image sources
-  const newReleases = [
-    {
-      id: '1',
-      title: 'Song Title',
-      artist: 'Artist',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '2',
-      title: 'Song Title',
-      artist: 'Artist',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '3',
-      title: 'Song Title',
-      artist: 'Artist',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-  ];
-
-  const popularVideos = [
-    {
-      id: '1',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '2',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-
-    {
-      id: '',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-  ];
-
-  const trendsVideos = [
-    {
-      id: '1',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '2',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-
-    {
-      id: '3',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-  ];
-
-  const popularArtists = [
-    {
-      id: '1',
-      name: 'Artist',
-      songs: 'Number of songs',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '2',
-      name: 'Artist',
-      songs: 'Number of songs',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '3',
-      name: 'Artist',
-      songs: 'Number of songs',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '4',
-      name: 'Artist',
-      songs: 'Number of songs',
-      image: require('../assets/song-image.jpg'),
-    },
-  ];
-
-  const popularAlbums = [
-    {
-      id: '1',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '2',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '3',
-      title: 'Song Title',
-      duration: '3:45',
-      image: require('../assets/song-image.jpg'),
-    },
-  ];
+  // Sections data with real songs
+  const newReleases = songs.slice(0, 3);
+  const popularVideos = songs.slice(1, 4);
+  const trendsVideos = songs.slice(2, 5);
+  const popularArtists = songs.map(song => ({
+    id: song.id,
+    name: song.artist,
+    songs: '10 songs',
+    image: song.image,
+  }));
+  const popularAlbums = songs.slice(0, 3);
 
   const renderSection = (title, items, renderItem) => (
     <View style={styles.section}>
@@ -162,17 +57,36 @@ const HomeScreen = () => {
       >
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
+          <TouchableOpacity 
+            style={styles.searchBar}
+            onPress={() => navigation.navigate('Search')}
+          >
             <Icon name="search-outline" size={20} color="#666" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="What are you looking for?"
-              placeholderTextColor="#666"
-            />
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
+            <Text style={styles.searchText}>Track artist, track or album</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => navigation.navigate('Notification')}
+          >
             <Icon name="notifications-outline" size={24} color="#fff" />
           </TouchableOpacity>
+        </View>
+
+        {/* Profile Section */}
+        <View style={styles.profileSection}>
+          <View style={styles.profileLeft}>
+            <View style={styles.profileAvatar}>
+              <Image 
+                source={require('../assets/mona.png')}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>Mona<Text style={styles.profileNameBold}> LISA</Text></Text>
+              <Text style={styles.profileDescription}>Loren to sokoko</Text>
+            </View>
+          </View>
         </View>
 
         {/* New Releases */}
@@ -183,7 +97,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <Image
-              source={item.image}
+              source={{ uri: item.image }}
               style={styles.releaseCover}
               resizeMode="cover"
             />
@@ -204,7 +118,7 @@ const HomeScreen = () => {
           >
             <View style={styles.videoContainer}>
               <Image
-                source={item.image}
+                source={{ uri: item.image }}
                 style={styles.videoImage}
                 resizeMode="cover"
               />
@@ -221,14 +135,14 @@ const HomeScreen = () => {
 
         {/* Trends Videos */}
         {renderSection('Trends Videos 2023', trendsVideos, (item) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.videoItem} 
             key={item.id}
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <View style={styles.videoContainer}>
               <Image
-                source={item.image}
+                source={{ uri: item.image }}
                 style={styles.videoImage}
                 resizeMode="cover"
               />
@@ -251,7 +165,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Artist', { artist: item })}
           >
             <Image
-              source={item.image}
+              source={{ uri: item.image }}
               style={styles.artistAvatar}
               resizeMode="cover"
             />
@@ -272,7 +186,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <Image
-              source={item.image}
+              source={{ uri: item.image }}
               style={styles.albumCover}
               resizeMode="cover"
             />
@@ -295,33 +209,75 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 80, // Để tránh bị che bởi Bottom Tabs
+    paddingBottom: 80,
   },
-  header: {
+  searchContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    marginTop: 40, // Khoảng cách từ đỉnh màn hình
+    paddingVertical: 10,
+    marginTop: 40,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    height: 45,
+    marginRight: 10,
   },
-  notificationIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#FF4D4D',
+  searchText: {
+    flex: 1,
+    color: '#666',
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  notificationButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  notificationText: {
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    marginBottom: 10,
+  },
+  profileLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    overflow: 'hidden',
+    marginRight: 15,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 18,
     color: '#FFFFFF',
-    fontSize: 14,
+    marginBottom: 4,
+  },
+  profileNameBold: {
     fontWeight: 'bold',
+  },
+  profileDescription: {
+    fontSize: 14,
+    color: '#B0B0B0',
   },
   section: {
     marginBottom: 30,
@@ -423,12 +379,13 @@ const styles = StyleSheet.create({
     color: '#A78BFA',
   },
   artistItem: {
-    width: (width - 60) / 2, // Chia đôi chiều rộng màn hình, trừ padding
-    marginBottom: 20,
-    alignItems: 'center',
+    width: (width - 60) / 2,
+    marginRight: 15,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10,
-    padding: 10,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -436,22 +393,25 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   artistAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 12,
+    alignSelf: 'center',
     borderWidth: 2,
     borderColor: '#A78BFA',
   },
   artistName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
+    marginBottom: 4,
   },
   songCount: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#B0B0B0',
+    textAlign: 'center',
   },
   albumItem: {
     width: 140,
@@ -480,37 +440,6 @@ const styles = StyleSheet.create({
   albumDuration: {
     fontSize: 12,
     color: '#A78BFA',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 50, // Thêm margin-top để đẩy thanh tìm kiếm xuống
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)', // Làm trong suốt hơn một chút
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    height: 45,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    color: '#fff',
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  notificationButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: '#2A2A2A',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

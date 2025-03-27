@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,102 +6,313 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Audio } from 'expo-av';
+import Slider from '@react-native-community/slider';
+import { songs } from '../data/songs';
 
 const { width } = Dimensions.get('window');
-const imageSize = width - 80;
 
-const ListeningScreen = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { song } = route.params || { song: { title: 'Song Title', artist: 'Artist' } };
+const ListeningScreen = ({ navigation, route }) => {
+  const { song } = route.params;
   const [isPlaying, setIsPlaying] = useState(false);
+  const [sound, setSound] = useState(null);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentSong, setCurrentSong] = useState(song);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLooping, setIsLooping] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
 
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
+  useEffect(() => {
+    setupAudio();
+    return () => {
+      if (sound) {
+        console.log('Cleaning up audio...');
+        sound.stopAsync().then(() => {
+          sound.unloadAsync();
+          setSound(null);
+          setIsPlaying(false);
+        });
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    loadAudio();
+  }, [currentSong]);
+
+  useEffect(() => {
+    if (sound) {
+      const interval = setInterval(async () => {
+        if (isPlaying) {
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            setPosition(status.positionMillis / 1000);
+            if (status.didJustFinish) {
+              if (isLooping) {
+                await sound.replayAsync();
+              } else {
+                playNextSong();
+              }
+            }
+          }
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [sound, isPlaying]);
+
+  const setupAudio = async () => {
+    try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: true,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+    } catch (error) {
+      console.log('Error setting up audio:', error);
+    }
+  };
+
+  const loadAudio = async () => {
+    try {
+      // Unload previous audio if exists
+      if (sound) {
+        await sound.unloadAsync();
+        setSound(null);
+      }
+
+      console.log('Loading audio:', currentSong.audio);
+      
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        currentSong.audio,
+        { 
+          shouldPlay: false,
+          progressUpdateIntervalMillis: 1000,
+          positionMillis: 0,
+          volume: 1.0,
+          isLooping: isLooping,
+        },
+        onPlaybackStatusUpdate
+      );
+
+      setSound(newSound);
+      const status = await newSound.getStatusAsync();
+      console.log('Audio loaded with status:', status);
+      setDuration(status.durationMillis / 1000);
+      setPosition(0);
+      setIsPlaying(false);
+    } catch (error) {
+      console.error('Error loading audio:', error);
+      Alert.alert('Error', 'Could not load audio file. Please check if the audio file exists in assets/audio folder.');
+    }
+  };
+
+  const onPlaybackStatusUpdate = (status) => {
+    if (status.isLoaded) {
+      setPosition(status.positionMillis / 1000);
+      if (status.didJustFinish) {
+        if (isLooping) {
+          sound.replayAsync();
+        } else {
+          playNextSong();
+        }
+      }
+    }
+  };
+
+  const playPauseSound = async () => {
+    if (sound) {
+      if (isPlaying) {
+        await sound.pauseAsync();
+      } else {
+        await sound.playAsync();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const updatePosition = async (pos) => {
+    if (sound) {
+      await sound.setPositionAsync(pos * 1000);
+      setPosition(pos);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const playNextSong = async () => {
+    if (sound) {
+      await sound.stopAsync();
+      setIsPlaying(false);
+    }
+    const currentIndex = songs.findIndex(s => s.id === currentSong.id);
+    const nextIndex = (currentIndex + 1) % songs.length;
+    setCurrentSong(songs[nextIndex]);
+  };
+
+  const playPreviousSong = async () => {
+    if (sound) {
+      await sound.stopAsync();
+      setIsPlaying(false);
+    }
+    const currentIndex = songs.findIndex(s => s.id === currentSong.id);
+    const previousIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
+    setCurrentSong(songs[previousIndex]);
   };
 
   return (
-    <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="chevron-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Now Playing</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Share')}>
-          <Icon name="share-social" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Song Image */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={require('../assets/song-image.jpg')}
-          style={styles.songImage}
-          resizeMode="cover"
-        />
-      </View>
-
-      {/* Bottom Section */}
-      <View style={styles.bottomSection}>
-        {/* Song Info */}
-        <View style={styles.songInfo}>
-          <Text style={styles.songTitle}>{song.title}</Text>
-          <Text style={styles.songArtist}>{song.artist}</Text>
+    <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={async () => {
+              if (sound) {
+                await sound.stopAsync();
+                await sound.unloadAsync();
+                setSound(null);
+                setIsPlaying(false);
+              }
+              navigation.goBack();
+            }}
+          >
+            <Icon name="chevron-down" size={30} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Now Playing</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Queue')}>
+            <Icon name="list" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
 
-        {/* Playback Controls */}
-        <View style={styles.playbackControls}>
-          <TouchableOpacity>
+        {/* Song Cover */}
+        <View style={styles.coverContainer}>
+          <Image
+            source={{ uri: currentSong.image }}
+            style={styles.coverImage}
+            resizeMode="cover"
+          />
+        </View>
+
+        {/* Song Info */}
+        <View style={styles.songInfo}>
+          <Text style={styles.songTitle}>{currentSong.title}</Text>
+          <Text style={styles.artistName}>{currentSong.artist}</Text>
+        </View>
+
+        {/* Progress Bar */}
+        <View style={styles.progressContainer}>
+          <Slider
+            style={styles.progressBar}
+            value={position}
+            minimumValue={0}
+            maximumValue={duration}
+            minimumTrackTintColor="#9C27B0"
+            maximumTrackTintColor="#4A148C"
+            thumbTintColor="#9C27B0"
+            onSlidingComplete={updatePosition}
+          />
+          <View style={styles.timeContainer}>
+            <Text style={styles.timeText}>{formatTime(position)}</Text>
+            <Text style={styles.timeText}>{formatTime(duration)}</Text>
+          </View>
+        </View>
+
+        {/* Controls */}
+        <View style={styles.controls}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setIsShuffle(!isShuffle)}
+          >
+            <Icon
+              name="shuffle"
+              size={24}
+              color={isShuffle ? '#9C27B0' : '#fff'}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={playPreviousSong}
+          >
             <Icon name="play-skip-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.playButton} onPress={togglePlayPause}>
+          <TouchableOpacity
+            style={styles.playButton}
+            onPress={playPauseSound}
+          >
             <Icon
               name={isPlaying ? 'pause' : 'play'}
               size={30}
               color="#fff"
             />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={playNextSong}
+          >
             <Icon name="play-skip-forward" size={24} color="#fff" />
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setIsLooping(!isLooping)}
+          >
+            <Icon
+              name="repeat"
+              size={24}
+              color={isLooping ? '#9C27B0' : '#fff'}
+            />
+          </TouchableOpacity>
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity>
-            <Icon name="heart-outline" size={24} color="#fff" />
+        {/* Bottom Actions */}
+        <View style={styles.bottomActions}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => setIsLiked(!isLiked)}
+          >
+            <Icon
+              name={isLiked ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isLiked ? '#9C27B0' : '#fff'}
+            />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Comment')}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Comment')}
+          >
             <Icon name="chatbubble-outline" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Icon name="repeat-outline" size={24} color="#fff" />
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Share')}
+          >
+            <Icon name="share-outline" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('MenuList')}>
-            <Icon name="menu-outline" size={24} color="#fff" />
+          <TouchableOpacity style={styles.actionButton}>
+            <Icon name="ellipsis-horizontal" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
-
-        {/* More Button */}
-        <TouchableOpacity 
-          style={styles.moreButton}
-          onPress={() => navigation.navigate('Main', { screen: 'Home' })}
-        >
-          <Icon name="chevron-up" size={24} color="#fff" />
-          <Text style={styles.moreText}>More</Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   header: {
@@ -113,68 +324,82 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   headerTitle: {
-    color: '#fff',
     fontSize: 18,
+    color: '#fff',
     fontWeight: 'bold',
   },
-  imageContainer: {
-    flex: 1,
+  coverContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
+    marginVertical: 30,
   },
-  songImage: {
-    width: imageSize,
-    height: imageSize,
+  coverImage: {
+    width: width - 80,
+    height: width - 80,
     borderRadius: 20,
   },
-  bottomSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-  },
   songInfo: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   songTitle: {
+    fontSize: 24,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
-  songArtist: {
-    color: '#999',
+  artistName: {
     fontSize: 16,
+    color: '#B0B0B0',
   },
-  playbackControls: {
+  progressContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  progressBar: {
+    width: '100%',
+    height: 40,
+  },
+  timeContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 40,
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    marginTop: -10,
   },
-  playButton: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#8B00FF',
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+  timeText: {
+    color: '#B0B0B0',
+    fontSize: 12,
   },
-  actionButtons: {
+  controls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 40,
+    marginBottom: 30,
   },
-  moreButton: {
+  controlButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
   },
-  moreText: {
-    color: '#fff',
-    fontSize: 14,
-    marginTop: 4,
+  playButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#9C27B0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 40,
+    marginBottom: 30,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

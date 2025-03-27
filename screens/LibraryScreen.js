@@ -12,204 +12,165 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { songs } from '../data/songs';
 
 const { width } = Dimensions.get('window');
 
-const LibraryScreen = () => {
-  const navigation = useNavigation();
+const LibraryScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('Playlist');
   const [isGridLayout, setIsGridLayout] = useState(false);
 
+  // For demo, create some playlists from our songs
   const playlists = [
-    { id: '1', title: 'Your Playlist 1', songs: '10 songs', image: require('../assets/song-image.jpg') },
-    { id: '2', title: 'Your Playlist 2', songs: '8 songs', image: require('../assets/song-image.jpg') },
-    { id: '3', title: 'Your Playlist 3', songs: '12 songs', image: require('../assets/song-image.jpg') },
-  ];
-
-  const recentItems = [
     {
       id: '1',
-      title: 'Song Title',
-      artist: 'Artist',
-      image: require('../assets/song-image.jpg'),
+      title: 'Your Playlist 1',
+      songs: songs.slice(0, 3),
+      image: songs[0].image
     },
     {
       id: '2',
-      title: 'Song Title',
-      artist: 'Artist',
-      image: require('../assets/song-image.jpg'),
+      title: 'Your Playlist 2',
+      songs: songs.slice(1, 4),
+      image: songs[1].image
     },
     {
       id: '3',
-      title: 'Song Title',
-      artist: 'Artist',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '4',
-      title: 'Song Title',
-      artist: 'Artist',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '5',
-      title: 'Song Title',
-      artist: 'Artist',
-      image: require('../assets/song-image.jpg'),
-    },
+      title: 'Your Playlist 3',
+      songs: songs.slice(2, 5),
+      image: songs[2].image
+    }
   ];
 
-  const renderPlaylistItem = ({ item }) => (
-    <TouchableOpacity style={styles.playlistCircle}>
-      <View style={styles.playlistImageContainer}>
-        <Image source={item.image} style={styles.playlistImage} />
-      </View>
-      <Text style={styles.playlistTitle} numberOfLines={1}>
-        {item.title}
-      </Text>
-      <Text style={styles.playlistSongs} numberOfLines={1}>
-        {item.songs}
+  // Recent songs will be the last 5 songs
+  const recentSongs = songs.slice(0, 5);
+
+  // Get unique artists from songs
+  const artists = [...new Set(songs.map(song => song.artist))].map(artist => ({
+    id: artist.toLowerCase().replace(/\s+/g, '-'),
+    name: artist,
+    songs: '10 songs',
+    image: songs.find(song => song.artist === artist)?.image
+  }));
+
+  const renderTab = (tabName, icon) => (
+    <TouchableOpacity
+      style={[styles.tab, activeTab === tabName && styles.activeTab]}
+      onPress={() => setActiveTab(tabName)}
+    >
+      <Icon name={icon} size={20} color={activeTab === tabName ? '#fff' : '#B0B0B0'} />
+      <Text style={[styles.tabText, activeTab === tabName && styles.activeTabText]}>
+        {tabName}
       </Text>
     </TouchableOpacity>
   );
 
-  const renderRecentItemList = ({ item }) => (
+  const renderPlaylistItem = (playlist) => (
     <TouchableOpacity
-      style={styles.recentItemList}
-      onPress={() => navigation.navigate('Listening', { song: item })}
+      key={playlist.id}
+      style={styles.playlistItem}
+      onPress={() => navigation.navigate('Listening', {
+        song: playlist.songs[0],
+        playlist: playlist.songs,
+        isPlayingAll: true
+      })}
     >
-      <Image source={item.image} style={styles.recentImageList} />
-      <View style={styles.recentTextContainer}>
-        <Text style={styles.recentTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.recentArtist} numberOfLines={1}>
-          {item.artist}
-        </Text>
+      <Image source={{ uri: playlist.image }} style={styles.playlistImage} />
+      <Text style={styles.playlistTitle}>{playlist.title}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderArtistItem = (artist) => (
+    <TouchableOpacity
+      key={artist.id}
+      style={styles.artistItem}
+      onPress={() => navigation.navigate('Artist', { artist })}
+    >
+      <Image source={{ uri: artist.image }} style={styles.artistImage} />
+      <Text style={styles.artistItemTitle}>{artist.name}</Text>
+      <Text style={styles.artistSongs}>{artist.songs}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderSongItem = (song, index) => (
+    <TouchableOpacity
+      key={song.id}
+      style={isGridLayout ? styles.songItemGrid : styles.songItem}
+      onPress={() => navigation.navigate('Listening', {
+        song,
+        playlist: recentSongs,
+        currentIndex: index
+      })}
+    >
+      <Image 
+        source={{ uri: song.image }} 
+        style={isGridLayout ? styles.songImageGrid : styles.songImage} 
+      />
+      <View style={isGridLayout ? styles.songInfoGrid : styles.songInfo}>
+        <Text style={styles.songTitle} numberOfLines={1}>{song.title}</Text>
+        <Text style={styles.artistName} numberOfLines={1}>{song.artist}</Text>
       </View>
       <TouchableOpacity style={styles.moreButton}>
-        <Icon name="ellipsis-vertical" size={20} color="#fff" />
+        <Icon name="ellipsis-vertical" size={20} color="#B0B0B0" />
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
-
-  const renderRecentItemGrid = ({ item }) => (
-    <TouchableOpacity
-      style={styles.recentItemGrid}
-      onPress={() => navigation.navigate('Listening', { song: item })}
-    >
-      <Image source={item.image} style={styles.recentImageGrid} />
-      <View style={styles.recentGridInfo}>
-        <Text style={styles.recentTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.recentArtist} numberOfLines={1}>
-          {item.artist}
-        </Text>
-        <TouchableOpacity style={styles.moreButton}>
-          <Icon name="ellipsis-vertical" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
     </TouchableOpacity>
   );
 
   return (
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={24} color="#fff" />
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>My Library</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.headerButton}>
+            <Icon name="search" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Library</Text>
-          <View style={styles.headerRight}>
-            <TouchableOpacity 
-              style={styles.iconButton}
-              onPress={() => navigation.navigate('Search')}
-            >
-              <Icon name="search-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.iconButton}
-              onPress={() => navigation.navigate('LibraryLayout')}
-            >
-              <Icon name="grid-outline" size={24} color="#fff" />
-            </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabContainer}>
+        {renderTab('Playlist', 'list')}
+        {renderTab('Album', 'albums')}
+        {renderTab('Artist', 'person')}
+      </View>
+
+      <ScrollView style={styles.content}>
+        {/* Playlists Grid */}
+        {activeTab === 'Playlist' && (
+          <View style={styles.playlistGrid}>
+            {playlists.map(renderPlaylistItem)}
           </View>
-        </View>
+        )}
 
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity
-              style={[styles.tabButton, activeTab === 'Playlist' && styles.activeTabButton]}
-              onPress={() => setActiveTab('Playlist')}
-            >
-              <Icon name="list" size={24} color="#fff" />
-              <Text style={styles.tabText}>Playlist</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tabButton, activeTab === 'Album' && styles.activeTabButton]}
-              onPress={() => setActiveTab('Album')}
-            >
-              <Icon name="albums" size={24} color="#fff" />
-              <Text style={styles.tabText}>Album</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tabButton, activeTab === 'Artist' && styles.activeTabButton]}
-              onPress={() => setActiveTab('Artist')}
-            >
-              <Icon name="person" size={24} color="#fff" />
-              <Text style={styles.tabText}>Artist</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* Playlists */}
-        <View style={styles.playlistsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {playlists.map((item) => (
-              <View key={item.id} style={styles.playlistCircle}>
-                <View style={styles.playlistImageContainer}>
-                  <Image source={item.image} style={styles.playlistImage} />
-                </View>
-                <Text style={styles.playlistTitle} numberOfLines={1}>
-                  {item.title}
-                </Text>
-              </View>
-            ))}
-            <TouchableOpacity style={styles.createPlaylistButton}>
-              <Icon name="add" size={40} color="#fff" />
-              <Text style={styles.createPlaylistText}>Create{'\n'}Playlist</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
+        {/* Artists Grid */}
+        {activeTab === 'Artist' && (
+          <View style={styles.artistGrid}>
+            {artists.map(renderArtistItem)}
+          </View>
+        )}
 
         {/* Recent Section */}
-        <View style={styles.recentSection}>
-          <View style={styles.recentHeader}>
-            <Text style={styles.sectionTitle}>Recent</Text>
-            <TouchableOpacity onPress={() => setIsGridLayout(!isGridLayout)}>
-              <Icon 
-                name={isGridLayout ? "list" : "grid"} 
-                size={24} 
-                color="#fff" 
-              />
-            </TouchableOpacity>
+        {activeTab !== 'Artist' && (
+          <View style={styles.recentSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent</Text>
+              <TouchableOpacity onPress={() => setIsGridLayout(!isGridLayout)}>
+                <Icon 
+                  name={isGridLayout ? "list" : "grid"} 
+                  size={20} 
+                  color="#fff" 
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={[
+              styles.songsList,
+              isGridLayout && styles.songsGrid
+            ]}>
+              {recentSongs.map((song, index) => renderSongItem(song, index))}
+            </View>
           </View>
-          <FlatList
-            key={isGridLayout ? 'grid' : 'list'}
-            data={recentItems}
-            keyExtractor={(item) => item.id}
-            renderItem={isGridLayout ? renderRecentItemGrid : renderRecentItemList}
-            numColumns={isGridLayout ? 2 : 1}
-            scrollEnabled={false}
-          />
-        </View>
+        )}
       </ScrollView>
     </LinearGradient>
   );
@@ -219,158 +180,173 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingBottom: 80,
-  },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 40,
     paddingBottom: 20,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   headerRight: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: 15,
   },
-  iconButton: {
-    marginLeft: 15,
+  headerButton: {
+    padding: 5,
   },
-  tabsContainer: {
+  tabContainer: {
+    flexDirection: 'row',
     paddingHorizontal: 20,
     marginBottom: 20,
+    gap: 20,
   },
-  tabButton: {
+  tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 15,
     paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    marginRight: 10,
+    backgroundColor: 'transparent',
+    gap: 8,
   },
-  activeTabButton: {
-    backgroundColor: '#8B00FF',
+  activeTab: {
+    backgroundColor: '#7B1FA2',
   },
   tabText: {
+    color: '#B0B0B0',
+    fontSize: 16,
+  },
+  activeTabText: {
     color: '#fff',
-    marginLeft: 5,
   },
-  playlistsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
+  content: {
+    flex: 1,
   },
-  playlistCircle: {
+  playlistGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 15,
+    gap: 15,
+  },
+  playlistItem: {
+    width: (width - 60) / 3,
     alignItems: 'center',
-    marginRight: 20,
-    width: 100,
-  },
-  playlistImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#8B00FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    overflow: 'hidden',
   },
   playlistImage: {
-    width: '100%',
-    height: '100%',
+    width: (width - 60) / 3,
+    height: (width - 60) / 3,
+    borderRadius: (width - 60) / 6,
+    marginBottom: 8,
   },
   playlistTitle: {
     color: '#fff',
     fontSize: 14,
     textAlign: 'center',
   },
-  playlistSongs: {
-    color: '#999',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  createPlaylistButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  createPlaylistText: {
-    color: '#fff',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 5,
-  },
   recentSection: {
+    marginTop: 30,
     paddingHorizontal: 20,
   },
-  recentHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   sectionTitle: {
     color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
   },
-  recentItemList: {
+  songsList: {
+    gap: 16,
+  },
+  songsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  songItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    padding: 10,
-    borderRadius: 10,
+    gap: 12,
   },
-  recentImageList: {
+  songItemGrid: {
+    width: (width - 55) / 2,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 10,
+    padding: 10,
+  },
+  songImage: {
     width: 50,
     height: 50,
-    borderRadius: 5,
+    borderRadius: 8,
   },
-  recentTextContainer: {
+  songImageGrid: {
+    width: '100%',
+    height: (width - 55) / 2,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  songInfo: {
     flex: 1,
-    marginLeft: 15,
   },
-  recentTitle: {
+  songInfoGrid: {
+    marginTop: 8,
+  },
+  songTitle: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
+    marginBottom: 4,
   },
-  recentArtist: {
-    color: '#999',
+  artistName: {
+    color: '#B0B0B0',
     fontSize: 14,
-    marginTop: 2,
   },
   moreButton: {
-    padding: 5,
+    padding: 8,
   },
-  recentItemGrid: {
-    width: (width - 60) / 2,
-    marginBottom: 20,
-    marginRight: 20,
-  },
-  recentImageGrid: {
-    width: '100%',
-    height: (width - 60) / 2,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  recentGridInfo: {
+  artistGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 15,
+    gap: 15,
+  },
+  artistItem: {
+    width: (width - 60) / 2,
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+  },
+  artistImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#A78BFA',
+  },
+  artistItemTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  artistSongs: {
+    color: '#B0B0B0',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 

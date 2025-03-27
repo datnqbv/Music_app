@@ -83,11 +83,11 @@ const ProfileScreen = ({ navigation }) => {
         {/* Profile Info */}
         <View style={styles.profileInfo}>
           <Image
-            source={require('../assets/song-image.jpg')}
+            source={require('../assets/mona.png')}
             style={styles.profilePicture}
           />
-          <Text style={styles.profileName}>Lorem Ipsum</Text>
-          <Text style={styles.profileUsername}>@loremipsum</Text>
+          <Text style={styles.profileName}>Đạt Phùng </Text>
+          <Text style={styles.profileUsername}>@Datsieucute</Text>
         </View>
 
         {/* Menu Items */}

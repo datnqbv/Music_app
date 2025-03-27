@@ -54,7 +54,7 @@ const EditProfileScreen = () => {
         {/* Profile Picture */}
         <View style={styles.profilePictureSection}>
           <Image
-            source={require('../assets/song-image.jpg')}
+            source={require('../assets/mona.png')}
             style={styles.profilePicture}
           />
           <TouchableOpacity style={styles.changePictureButton}>

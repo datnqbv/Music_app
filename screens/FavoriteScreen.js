@@ -3,97 +3,96 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Image,
+  TouchableOpacity,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { songs } from '../data/songs';
 
-const FavoriteScreen = () => {
-  const navigation = useNavigation();
+const FavoriteScreen = ({ navigation }) => {
+  // For demo, we'll use first 3 songs as favorites
+  const favoriteSongs = songs.slice(0, 3);
 
-  const favoriteSongs = [
-    {
-      id: '1',
-      title: 'Lorem ipsum',
-      artist: 'Artist Name',
-      image: require('../assets/song-image.jpg'),
-    },
-    {
-      id: '2',
-      title: 'Song Title',
-      artist: 'Artist',
-      image: require('../assets/song-image.jpg'),
-    },
-  ];
+  const handlePlayAll = () => {
+    if (favoriteSongs.length > 0) {
+      navigation.navigate('Listening', {
+        song: favoriteSongs[0],
+        playlist: favoriteSongs,
+        isPlayingAll: true
+      });
+    }
+  };
 
-  const renderSongItem = (song) => (
+  const renderSongItem = (song, index) => (
     <TouchableOpacity
       key={song.id}
       style={styles.songItem}
-      onPress={() => navigation.navigate('Listening', { song })}
+      onPress={() => navigation.navigate('Listening', {
+        song,
+        playlist: favoriteSongs,
+        currentIndex: index
+      })}
     >
+      <Image source={{ uri: song.image }} style={styles.songImage} />
       <View style={styles.songInfo}>
-        <Image source={song.image} style={styles.songImage} />
-        <View style={styles.songDetails}>
-          <Text style={styles.songTitle}>{song.title}</Text>
-          <Text style={styles.songArtist}>{song.artist}</Text>
-        </View>
+        <Text style={styles.songTitle}>{song.title}</Text>
+        <Text style={styles.artistName}>{song.artist}</Text>
       </View>
       <TouchableOpacity style={styles.moreButton}>
-        <Icon name="ellipsis-vertical" size={20} color="#fff" />
+        <Icon name="ellipsis-vertical" size={20} color="#B0B0B0" />
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
   return (
-    <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="chevron-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={{ width: 24 }} />
-      </View>
+    <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Icon name="chevron-back" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
-      {/* Song Image */}
-      <View style={styles.imageContainer}>
-        <Image 
-          source={require('../assets/song-image.jpg')}
-          style={styles.headerImage}
-          resizeMode="cover"
+        {/* Banner Image */}
+        <Image
+          source={require('../assets/music-banner.jpg')}
+          style={styles.bannerImage}
         />
-      </View>
 
-      <Text style={styles.subTitle}>Artist</Text>
+        {/* Title Section */}
+        <View style={styles.titleSection}>
+          <Text style={styles.smallText}>Artist</Text>
+          <Text style={styles.title}>Favorite Songs</Text>
+        </View>
 
-      {/* Playlist Title */}
-      <Text style={styles.playlistTitle}>Favorite Songs</Text>
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            style={styles.playButton}
+            onPress={handlePlayAll}
+          >
+            <Icon name="play" size={22} color="#000" />
+            <Text style={styles.playButtonText}>PLAY</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.shuffleButton}>
+            <Icon name="shuffle" size={22} color="#fff" />
+            <Text style={styles.shuffleButtonText}>SHUFFLE</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Control Buttons */}
-      <View style={styles.controlButtons}>
-        <TouchableOpacity style={styles.playButton}>
-          <Icon name="play" size={24} color="#000" />
-          <Text style={styles.playButtonText}>PLAY</Text>
+        {/* Add Songs Button */}
+        <TouchableOpacity style={styles.addSongsButton}>
+          <Icon name="add" size={24} color="#fff" />
+          <Text style={styles.addSongsText}>Add songs</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.shuffleButton}>
-          <Icon name="shuffle" size={24} color="#fff" />
-          <Text style={styles.shuffleButtonText}>SHUFFLE</Text>
-        </TouchableOpacity>
-      </View>
 
-      {/* Add Songs Button */}
-      <TouchableOpacity style={styles.addButton}>
-        <Icon name="add" size={24} color="#fff" />
-        <Text style={styles.addButtonText}>Add songs</Text>
-      </TouchableOpacity>
-
-      {/* Songs List */}
-      <ScrollView style={styles.songsList}>
-        {favoriteSongs.map(renderSongItem)}
+        {/* Songs List */}
+        <View style={styles.songsList}>
+          {favoriteSongs.map((song, index) => renderSongItem(song, index))}
+        </View>
       </ScrollView>
     </LinearGradient>
   );
@@ -103,125 +102,108 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 10,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
+    paddingTop: 40,
+    paddingBottom: 20,
   },
-  imageContainer: {
+  bannerImage: {
     width: '100%',
-    height: 300,
-    marginBottom: 20,
+    height: 200,
+    resizeMode: 'cover',
   },
-  headerImage: {
-    width: '100%',
-    height: '100%',
+  titleSection: {
+    padding: 20,
   },
-  subTitle: {
-    color: '#999',
-    fontSize: 16,
-    paddingHorizontal: 20,
-    marginBottom: 20,
+  smallText: {
+    color: '#B0B0B0',
+    fontSize: 14,
+    marginBottom: 8,
   },
-  playlistTitle: {
+  title: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    paddingHorizontal: 20,
-    marginBottom: 20,
   },
-  controlButtons: {
+  actionButtons: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    gap: 10,
-    marginBottom: 20,
+    gap: 15,
   },
   playButton: {
-    flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    paddingVertical: 12,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 25,
     gap: 8,
   },
   playButtonText: {
     color: '#000',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   shuffleButton: {
-    flex: 1,
     flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'transparent',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
     borderRadius: 25,
     borderWidth: 1,
     borderColor: '#fff',
-    paddingVertical: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
     gap: 8,
   },
   shuffleButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  addButton: {
+  addSongsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    paddingVertical: 15,
+    marginTop: 20,
     gap: 10,
   },
-  addButtonText: {
+  addSongsText: {
     color: '#fff',
     fontSize: 16,
   },
   songsList: {
-    flex: 1,
     paddingHorizontal: 20,
+    gap: 16,
   },
   songItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  songInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    gap: 12,
   },
   songImage: {
     width: 50,
     height: 50,
     borderRadius: 8,
-    marginRight: 15,
   },
-  songDetails: {
+  songInfo: {
     flex: 1,
   },
   songTitle: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
+    marginBottom: 4,
   },
-  songArtist: {
-    color: '#999',
+  artistName: {
+    color: '#B0B0B0',
     fontSize: 14,
   },
   moreButton: {
-    padding: 10,
+    padding: 8,
   },
 });
 
