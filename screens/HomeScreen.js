@@ -16,7 +16,9 @@ import { songs } from '../data/songs';
 
 const { width } = Dimensions.get('window');
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = () => {
+  const navigation = useNavigation();
+
   // Sections data with real songs
   const newReleases = songs.slice(0, 3);
   const popularVideos = songs.slice(1, 4);
@@ -101,7 +103,7 @@ const HomeScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <Image
-              source={{ uri: item.image }}
+              source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
               style={styles.releaseCover}
               resizeMode="cover"
             />
@@ -122,7 +124,7 @@ const HomeScreen = ({ navigation }) => {
           >
             <View style={styles.videoContainer}>
               <Image
-                source={{ uri: item.image }}
+                source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
                 style={styles.videoImage}
                 resizeMode="cover"
               />
@@ -146,7 +148,7 @@ const HomeScreen = ({ navigation }) => {
           >
             <View style={styles.videoContainer}>
               <Image
-                source={{ uri: item.image }}
+                source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
                 style={styles.videoImage}
                 resizeMode="cover"
               />
@@ -169,7 +171,7 @@ const HomeScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('Artist', { artist: item })}
           >
             <Image
-              source={{ uri: item.image }}
+              source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
               style={styles.artistAvatar}
               resizeMode="cover"
             />
@@ -190,7 +192,7 @@ const HomeScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <Image
-              source={{ uri: item.image }}
+              source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
               style={styles.albumCover}
               resizeMode="cover"
             />

@@ -8,6 +8,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -17,47 +18,56 @@ const CommentScreen = () => {
   const navigation = useNavigation();
   const [comment, setComment] = useState('');
 
-  // Dữ liệu mẫu cho comments
+  // Dữ liệu mẫu cho comments, thêm trường avatar
   const comments = [
     {
       id: '1',
-      username: 'User Name',
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      username: 'Sena',
+      comment: 'This song is amazing! Love the beat!',
       time: '2h ago',
+      avatar: require('../assets/sena.jpg'), // Ảnh đại diện mẫu
     },
     {
       id: '2',
-      username: 'User Name',
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      username: 'Ông vua 36',
+      comment: 'Great track, brings back memories.',
       time: '3h ago',
+      avatar: require('../assets/sena.jpg'),
     },
     {
       id: '3',
-      username: 'User Name',
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      username: 'Hắc hoàng đế',
+      comment: 'Can’t stop listening to this!',
       time: '4h ago',
+      avatar: require('../assets/sena.jpg'),
     },
     {
       id: '4',
-      username: 'User Name',
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      username: 'Black King',
+      comment: 'Such a vibe, perfect for my playlist.',
       time: '5h ago',
+      avatar: require('../assets/sena.jpg'),
     },
     {
       id: '5',
-      username: 'User Name',
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      username: 'Nghiện ',
+      comment: 'This artist never disappoints!',
       time: '6h ago',
+      avatar: require('../assets/sena.jpg'),
     },
   ];
 
   const renderComment = ({ item }) => (
     <View style={styles.commentItem}>
       <View style={styles.avatarContainer}>
-        <LinearGradient
-          colors={['#8B00FF', '#4A148C']}
-          style={styles.avatar}
-        />
+        {item.avatar ? (
+          <Image source={item.avatar} style={styles.avatar} />
+        ) : (
+          <LinearGradient
+            colors={['#8B00FF', '#4A148C']}
+            style={styles.avatar}
+          />
+        )}
       </View>
       <View style={styles.commentContent}>
         <View style={styles.commentHeader}>

@@ -10,7 +10,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { songs } from '../data/songs';
 
@@ -26,20 +25,20 @@ const LibraryScreen = ({ navigation }) => {
       id: '1',
       title: 'Your Playlist 1',
       songs: songs.slice(0, 3),
-      image: songs[0].image
+      image: songs[0].image,
     },
     {
       id: '2',
       title: 'Your Playlist 2',
       songs: songs.slice(1, 4),
-      image: songs[1].image
+      image: songs[1].image,
     },
     {
       id: '3',
       title: 'Your Playlist 3',
       songs: songs.slice(2, 5),
-      image: songs[2].image
-    }
+      image: songs[2].image,
+    },
   ];
 
   // Recent songs will be the last 5 songs
@@ -50,7 +49,7 @@ const LibraryScreen = ({ navigation }) => {
     id: artist.toLowerCase().replace(/\s+/g, '-'),
     name: artist,
     songs: '10 songs',
-    image: songs.find(song => song.artist === artist)?.image
+    image: songs.find(song => song.artist === artist)?.image,
   }));
 
   const renderTab = (tabName, icon) => (
@@ -69,13 +68,15 @@ const LibraryScreen = ({ navigation }) => {
     <TouchableOpacity
       key={playlist.id}
       style={styles.playlistItem}
-      onPress={() => navigation.navigate('Listening', {
-        song: playlist.songs[0],
-        playlist: playlist.songs,
-        isPlayingAll: true
-      })}
+      onPress={() =>
+        navigation.navigate('Listening', {
+          song: playlist.songs[0],
+          playlist: playlist.songs,
+          isPlayingAll: true,
+        })
+      }
     >
-      <Image source={{ uri: playlist.image }} style={styles.playlistImage} />
+      {playlist.image && <Image source={playlist.image} style={styles.playlistImage} />}
       <Text style={styles.playlistTitle}>{playlist.title}</Text>
     </TouchableOpacity>
   );
@@ -86,7 +87,7 @@ const LibraryScreen = ({ navigation }) => {
       style={styles.artistItem}
       onPress={() => navigation.navigate('Artist', { artist })}
     >
-      <Image source={{ uri: artist.image }} style={styles.artistImage} />
+      {artist.image && <Image source={artist.image} style={styles.artistImage} />}
       <Text style={styles.artistItemTitle}>{artist.name}</Text>
       <Text style={styles.artistSongs}>{artist.songs}</Text>
     </TouchableOpacity>
@@ -96,19 +97,27 @@ const LibraryScreen = ({ navigation }) => {
     <TouchableOpacity
       key={song.id}
       style={isGridLayout ? styles.songItemGrid : styles.songItem}
-      onPress={() => navigation.navigate('Listening', {
-        song,
-        playlist: recentSongs,
-        currentIndex: index
-      })}
+      onPress={() =>
+        navigation.navigate('Listening', {
+          song,
+          playlist: recentSongs,
+          currentIndex: index,
+        })
+      }
     >
-      <Image 
-        source={{ uri: song.image }} 
-        style={isGridLayout ? styles.songImageGrid : styles.songImage} 
-      />
+      {song.image && (
+        <Image
+          source={song.image}
+          style={isGridLayout ? styles.songImageGrid : styles.songImage}
+        />
+      )}
       <View style={isGridLayout ? styles.songInfoGrid : styles.songInfo}>
-        <Text style={styles.songTitle} numberOfLines={1}>{song.title}</Text>
-        <Text style={styles.artistName} numberOfLines={1}>{song.artist}</Text>
+        <Text style={styles.songTitle} numberOfLines={1}>
+          {song.title || 'Unknown Title'}
+        </Text>
+        <Text style={styles.artistName} numberOfLines={1}>
+          {song.artist || 'Unknown Artist'}
+        </Text>
       </View>
       <TouchableOpacity style={styles.moreButton}>
         <Icon name="ellipsis-vertical" size={20} color="#B0B0B0" />
@@ -116,13 +125,17 @@ const LibraryScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  const handleSearchPress = () => {
+    navigation.navigate('Search');
+  };
+
   return (
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Library</Text>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleSearchPress}>
             <Icon name="search" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -156,17 +169,16 @@ const LibraryScreen = ({ navigation }) => {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent</Text>
               <TouchableOpacity onPress={() => setIsGridLayout(!isGridLayout)}>
-                <Icon 
-                  name={isGridLayout ? "list" : "grid"} 
-                  size={20} 
-                  color="#fff" 
+                <Icon
+                  name={isGridLayout ? 'list' : 'grid'}
+                  size={20}
+                  color="#fff"
                 />
               </TouchableOpacity>
             </View>
-            <View style={[
-              styles.songsList,
-              isGridLayout && styles.songsGrid
-            ]}>
+            <View
+              style={[styles.songsList, isGridLayout && styles.songsGrid]}
+            >
               {recentSongs.map((song, index) => renderSongItem(song, index))}
             </View>
           </View>

@@ -22,7 +22,7 @@ const QueueScreen = ({ route, navigation }) => {
       song: song,
       playlist: playlist,
       currentIndex: index,
-      shouldAutoPlay: true // Add flag to auto play the selected song
+      shouldAutoPlay: true, // Add flag to auto play the selected song
     });
   };
 
@@ -31,7 +31,7 @@ const QueueScreen = ({ route, navigation }) => {
       key={song.id}
       style={[
         styles.songItem,
-        currentSong?.id === song.id && styles.currentSongItem
+        currentSong?.id === song.id && styles.currentSongItem,
       ]}
       onPress={() => playNextSong(song, index)}
     >
@@ -42,19 +42,19 @@ const QueueScreen = ({ route, navigation }) => {
           <Text style={styles.songNumber}>{index + 1}</Text>
         )}
       </View>
-      <Image source={{ uri: song.image }} style={styles.songImage} />
+      {song.image && <Image source={song.image} style={styles.songImage} />}
       <View style={styles.songInfo}>
-        <Text 
+        <Text
           style={[
             styles.songTitle,
-            currentSong?.id === song.id && styles.currentSongText
+            currentSong?.id === song.id && styles.currentSongText,
           ]}
           numberOfLines={1}
         >
-          {song.title}
+          {song.title || 'Unknown Title'}
         </Text>
         <Text style={styles.artistName} numberOfLines={1}>
-          {song.artist}
+          {song.artist || 'Unknown Artist'}
         </Text>
       </View>
       <TouchableOpacity style={styles.moreButton}>
@@ -67,7 +67,7 @@ const QueueScreen = ({ route, navigation }) => {
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -78,21 +78,29 @@ const QueueScreen = ({ route, navigation }) => {
       </View>
 
       {/* Current Playing */}
-      {currentSong && (
+      {currentSong ? (
         <View style={styles.currentSection}>
           <Text style={styles.sectionTitle}>Now Playing</Text>
           {renderSongItem(currentSong, playlist.findIndex(s => s.id === currentSong.id))}
+        </View>
+      ) : (
+        <View style={styles.currentSection}>
+          <Text style={styles.emptyText}>No song is currently playing.</Text>
         </View>
       )}
 
       {/* Queue List */}
       <View style={styles.queueSection}>
         <Text style={styles.sectionTitle}>Next Up</Text>
-        <ScrollView style={styles.songsList}>
-          {playlist.map((song, index) => (
-            song.id !== currentSong?.id && renderSongItem(song, index)
-          ))}
-        </ScrollView>
+        {playlist.length > 0 ? (
+          <ScrollView style={styles.songsList}>
+            {playlist.map((song, index) =>
+              song.id !== currentSong?.id && renderSongItem(song, index)
+            )}
+          </ScrollView>
+        ) : (
+          <Text style={styles.emptyText}>No songs in the queue.</Text>
+        )}
       </View>
     </LinearGradient>
   );
@@ -181,6 +189,12 @@ const styles = StyleSheet.create({
   },
   moreButton: {
     padding: 8,
+  },
+  emptyText: {
+    color: '#B0B0B0',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

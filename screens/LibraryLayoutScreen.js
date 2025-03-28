@@ -28,43 +28,58 @@ const LibraryLayoutScreen = () => {
   const recentItems = [
     {
       id: '1',
-      title: 'Song Title',
-      artist: 'Artist',
+      title: 'Song Title 1',
+      artist: 'Artist 1',
       image: require('../assets/song-image.jpg'),
     },
     {
       id: '2',
-      title: 'Song Title',
-      artist: 'Artist',
+      title: 'Song Title 2',
+      artist: 'Artist 2',
       image: require('../assets/song-image.jpg'),
     },
     {
       id: '3',
-      title: 'Song Title',
-      artist: 'Artist',
+      title: 'Song Title 3',
+      artist: 'Artist 3',
       image: require('../assets/song-image.jpg'),
     },
     {
       id: '4',
-      title: 'Song Title',
-      artist: 'Artist',
+      title: 'Song Title 4',
+      artist: 'Artist 4',
       image: require('../assets/song-image.jpg'),
     },
   ];
+
+  const renderPlaylistItem = ({ item }) => (
+    <View key={item.id} style={styles.playlistCircle}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Playlist', { playlist: item })}
+      >
+        <View style={styles.playlistImageContainer}>
+          {item.image && <Image source={item.image} style={styles.playlistImage} />}
+        </View>
+      </TouchableOpacity>
+      <Text style={styles.playlistTitle} numberOfLines={1}>
+        {item.title || 'Unknown Playlist'}
+      </Text>
+    </View>
+  );
 
   const renderRecentItem = ({ item }) => (
     <TouchableOpacity
       style={styles.recentItem}
       onPress={() => navigation.navigate('Listening', { song: item })}
     >
-      <Image source={item.image} style={styles.recentImage} />
+      {item.image && <Image source={item.image} style={styles.recentImage} />}
       <View style={styles.recentInfo}>
         <View style={styles.recentTextContainer}>
           <Text style={styles.recentTitle} numberOfLines={1}>
-            {item.title}
+            {item.title || 'Unknown Title'}
           </Text>
           <Text style={styles.recentArtist} numberOfLines={1}>
-            {item.artist}
+            {item.artist || 'Unknown Artist'}
           </Text>
         </View>
         <TouchableOpacity style={styles.moreButton}>
@@ -88,13 +103,13 @@ const LibraryLayoutScreen = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>My Library</Text>
           <View style={styles.headerRight}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.iconButton}
               onPress={() => navigation.navigate('Search')}
             >
               <Icon name="search-outline" size={24} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.iconButton}
               onPress={() => navigation.navigate('Library')}
             >
@@ -132,38 +147,55 @@ const LibraryLayoutScreen = () => {
 
         {/* Playlists */}
         <View style={styles.playlistsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {playlists.map((item) => (
-              <View key={item.id} style={styles.playlistCircle}>
-                <View style={styles.playlistImageContainer}>
-                  <Image source={item.image} style={styles.playlistImage} />
-                </View>
-                <Text style={styles.playlistTitle} numberOfLines={1}>
-                  {item.title}
-                </Text>
-              </View>
-            ))}
-            <TouchableOpacity style={styles.createPlaylistButton}>
-              <Icon name="add" size={40} color="#fff" />
-              <Text style={styles.createPlaylistText}>Create{'\n'}Playlist</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* Recent Section */}
-        <View style={styles.recentSection}>
-          <View style={styles.recentHeader}>
-            <Text style={styles.sectionTitle}>Recent</Text>
-          </View>
           <FlatList
-            data={recentItems}
+            data={playlists}
+            renderItem={renderPlaylistItem}
             keyExtractor={(item) => item.id}
-            renderItem={renderRecentItem}
-            numColumns={1}
-            scrollEnabled={false}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            ListFooterComponent={() => (
+              <TouchableOpacity
+                style={styles.createPlaylistButton}
+                onPress={() => navigation.navigate('CreatePlaylist')}
+              >
+                <Icon name="add" size={40} color="#fff" />
+                <Text style={styles.createPlaylistText}>Create{'\n'}Playlist</Text>
+              </TouchableOpacity>
+            )}
           />
         </View>
+
+        {/* Content Based on Active Tab */}
+        {activeTab === 'Playlist' && (
+          <>
+            {/* Recent Section */}
+            <View style={styles.recentSection}>
+              <View style={styles.recentHeader}>
+                <Text style={styles.sectionTitle}>Recent</Text>
+              </View>
+              <FlatList
+                data={recentItems}
+                keyExtractor={(item) => item.id}
+                renderItem={renderRecentItem}
+                numColumns={1}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+              />
+            </View>
+          </>
+        )}
+
+        {activeTab === 'Album' && (
+          <View style={styles.emptySection}>
+            <Text style={styles.emptyText}>No albums available.</Text>
+          </View>
+        )}
+
+        {activeTab === 'Artist' && (
+          <View style={styles.emptySection}>
+            <Text style={styles.emptyText}>No artists available.</Text>
+          </View>
+        )}
       </ScrollView>
     </LinearGradient>
   );
@@ -308,6 +340,15 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 20,
+  },
+  emptySection: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  emptyText: {
+    color: '#B0B0B0',
+    fontSize: 16,
   },
 });
 

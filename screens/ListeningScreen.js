@@ -27,28 +27,45 @@ const ListeningScreen = ({ navigation, route }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
+  const [isSoundLoaded, setIsSoundLoaded] = useState(false); // Thêm trạng thái để theo dõi sound
 
+  // Thiết lập audio mode khi màn hình được mount
   useEffect(() => {
     setupAudio();
-    return () => {
-      if (sound) {
-        console.log('Cleaning up audio...');
-        sound.stopAsync().then(() => {
-          sound.unloadAsync();
-          setSound(null);
-          setIsPlaying(false);
-        });
-      }
-    };
   }, []);
 
+  // Dọn dẹp audio khi màn hình bị unmount hoặc mất focus
   useEffect(() => {
-    loadAudio();
+    const unsubscribeFocus = navigation.addListener('blur', () => {
+      console.log('Screen blurred, cleaning up audio...');
+      cleanupAudio();
+    });
+
+    const unsubscribeUnmount = navigation.addListener('beforeRemove', () => {
+      console.log('Screen is being removed, cleaning up audio...');
+      cleanupAudio();
+    });
+
+    return () => {
+      console.log('Unmounting ListeningScreen, cleaning up audio...');
+      cleanupAudio();
+      unsubscribeFocus();
+      unsubscribeUnmount();
+    };
+  }, [navigation, sound, isSoundLoaded]); // Thêm isSoundLoaded vào dependency
+
+  // Load audio khi bài hát thay đổi
+  useEffect(() => {
+    if (currentSong) {
+      loadAudio();
+    }
   }, [currentSong]);
 
+  // Cập nhật vị trí phát nhạc
   useEffect(() => {
-    if (sound) {
-      const interval = setInterval(async () => {
+    let interval;
+    if (sound && isSoundLoaded) {
+      interval = setInterval(async () => {
         if (isPlaying) {
           const status = await sound.getStatusAsync();
           if (status.isLoaded) {
@@ -63,17 +80,18 @@ const ListeningScreen = ({ navigation, route }) => {
           }
         }
       }, 1000);
-      return () => clearInterval(interval);
     }
-  }, [sound, isPlaying]);
+    return () => clearInterval(interval);
+  }, [sound, isPlaying, isSoundLoaded]);
 
+  // Tự động phát nhạc nếu shouldAutoPlay được bật
   useEffect(() => {
-    if (shouldAutoPlay && currentSong) {
-      loadAudio();
+    if (shouldAutoPlay && currentSong && sound && isSoundLoaded) {
       playSound();
     }
-  }, [currentSong, shouldAutoPlay]);
+  }, [currentSong, shouldAutoPlay, sound, isSoundLoaded]);
 
+  // Cập nhật bài hát hiện tại khi initialSong thay đổi
   useEffect(() => {
     if (initialSong) {
       setCurrentSong(initialSong);
@@ -94,19 +112,37 @@ const ListeningScreen = ({ navigation, route }) => {
     }
   };
 
+  const cleanupAudio = async () => {
+    if (sound && isSoundLoaded) {
+      try {
+        console.log('Cleaning up audio...');
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          await sound.stopAsync(); // Dừng phát nhạc
+          await sound.unloadAsync(); // Dọn dẹp tài nguyên âm thanh
+        }
+        setSound(null);
+        setIsSoundLoaded(false); // Đặt lại trạng thái
+        setIsPlaying(false);
+        setPosition(0);
+      } catch (error) {
+        console.error('Error cleaning up audio:', error);
+      }
+    } else {
+      console.log('No sound to clean up or sound is not loaded.');
+    }
+  };
+
   const loadAudio = async () => {
     try {
-      // Unload previous audio if exists
-      if (sound) {
-        await sound.unloadAsync();
-        setSound(null);
-      }
+      // Dọn dẹp audio trước đó nếu có
+      await cleanupAudio();
 
       console.log('Loading audio:', currentSong.audio);
-      
+
       const { sound: newSound } = await Audio.Sound.createAsync(
         currentSong.audio,
-        { 
+        {
           shouldPlay: false,
           progressUpdateIntervalMillis: 1000,
           positionMillis: 0,
@@ -117,6 +153,7 @@ const ListeningScreen = ({ navigation, route }) => {
       );
 
       setSound(newSound);
+      setIsSoundLoaded(true); // Đánh dấu sound đã được tải
       const status = await newSound.getStatusAsync();
       console.log('Audio loaded with status:', status);
       setDuration(status.durationMillis / 1000);
@@ -142,7 +179,7 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   const playPauseSound = async () => {
-    if (sound) {
+    if (sound && isSoundLoaded) {
       if (isPlaying) {
         await sound.pauseAsync();
       } else {
@@ -153,7 +190,7 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   const updatePosition = async (pos) => {
-    if (sound) {
+    if (sound && isSoundLoaded) {
       await sound.setPositionAsync(pos * 1000);
       setPosition(pos);
     }
@@ -166,7 +203,7 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   const playNextSong = async () => {
-    if (sound) {
+    if (sound && isSoundLoaded) {
       await sound.stopAsync();
       setIsPlaying(false);
     }
@@ -176,7 +213,7 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   const playPreviousSong = async () => {
-    if (sound) {
+    if (sound && isSoundLoaded) {
       await sound.stopAsync();
       setIsPlaying(false);
     }
@@ -186,7 +223,7 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   const playSound = async () => {
-    if (sound) {
+    if (sound && isSoundLoaded) {
       await sound.playAsync();
       setIsPlaying(true);
     }
@@ -201,10 +238,10 @@ const ListeningScreen = ({ navigation, route }) => {
             <Icon name="chevron-down" size={30} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Now Playing</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.navigate('Queue', {
               playlist: route.params?.playlist || [currentSong],
-              currentSong: currentSong
+              currentSong: currentSong,
             })}
           >
             <Icon name="list" size={24} color="#fff" />
@@ -213,17 +250,19 @@ const ListeningScreen = ({ navigation, route }) => {
 
         {/* Song Cover */}
         <View style={styles.coverContainer}>
-          <Image
-            source={{ uri: currentSong.image }}
-            style={styles.coverImage}
-            resizeMode="cover"
-          />
+          {currentSong && currentSong.image && (
+            <Image
+              source={currentSong.image}
+              style={styles.coverImage}
+              resizeMode="cover"
+            />
+          )}
         </View>
 
         {/* Song Info */}
         <View style={styles.songInfo}>
-          <Text style={styles.songTitle}>{currentSong.title}</Text>
-          <Text style={styles.artistName}>{currentSong.artist}</Text>
+          <Text style={styles.songTitle}>{currentSong?.title || 'Unknown Title'}</Text>
+          <Text style={styles.artistName}>{currentSong?.artist || 'Unknown Artist'}</Text>
         </View>
 
         {/* Progress Bar */}

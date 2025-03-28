@@ -20,7 +20,7 @@ const FavoriteScreen = ({ navigation }) => {
       navigation.navigate('Listening', {
         song: favoriteSongs[0],
         playlist: favoriteSongs,
-        isPlayingAll: true
+        isPlayingAll: true,
       });
     }
   };
@@ -29,16 +29,18 @@ const FavoriteScreen = ({ navigation }) => {
     <TouchableOpacity
       key={song.id}
       style={styles.songItem}
-      onPress={() => navigation.navigate('Listening', {
-        song,
-        playlist: favoriteSongs,
-        currentIndex: index
-      })}
+      onPress={() =>
+        navigation.navigate('Listening', {
+          song,
+          playlist: favoriteSongs,
+          currentIndex: index,
+        })
+      }
     >
-      <Image source={{ uri: song.image }} style={styles.songImage} />
+      {song.image && <Image source={song.image} style={styles.songImage} />}
       <View style={styles.songInfo}>
-        <Text style={styles.songTitle}>{song.title}</Text>
-        <Text style={styles.artistName}>{song.artist}</Text>
+        <Text style={styles.songTitle}>{song.title || 'Unknown Title'}</Text>
+        <Text style={styles.artistName}>{song.artist || 'Unknown Artist'}</Text>
       </View>
       <TouchableOpacity style={styles.moreButton}>
         <Icon name="ellipsis-vertical" size={20} color="#B0B0B0" />
@@ -70,10 +72,7 @@ const FavoriteScreen = ({ navigation }) => {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={styles.playButton}
-            onPress={handlePlayAll}
-          >
+          <TouchableOpacity style={styles.playButton} onPress={handlePlayAll}>
             <Icon name="play" size={22} color="#000" />
             <Text style={styles.playButtonText}>PLAY</Text>
           </TouchableOpacity>
@@ -91,7 +90,11 @@ const FavoriteScreen = ({ navigation }) => {
 
         {/* Songs List */}
         <View style={styles.songsList}>
-          {favoriteSongs.map((song, index) => renderSongItem(song, index))}
+          {favoriteSongs.length > 0 ? (
+            favoriteSongs.map((song, index) => renderSongItem(song, index))
+          ) : (
+            <Text style={styles.noSongsText}>No favorite songs available.</Text>
+          )}
         </View>
       </ScrollView>
     </LinearGradient>
@@ -204,6 +207,12 @@ const styles = StyleSheet.create({
   },
   moreButton: {
     padding: 8,
+  },
+  noSongsText: {
+    color: '#B0B0B0',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
