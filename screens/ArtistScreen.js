@@ -30,6 +30,8 @@ const ArtistScreen = ({ route, navigation }) => {
     }
   };
 
+  
+
   const renderSongItem = (song, index) => (
     <TouchableOpacity
       key={song.id}
@@ -43,7 +45,7 @@ const ArtistScreen = ({ route, navigation }) => {
       <View style={styles.songNumberContainer}>
         <Text style={styles.songNumber}>{index + 1}</Text>
       </View>
-      <Image source={{ uri: song.image }} style={styles.songImage} />
+      <Image source={song.image} style={styles.songImage} />
       <View style={styles.songInfo}>
         <Text style={styles.songTitle} numberOfLines={1}>{song.title}</Text>
         <Text style={styles.songPlays}>{(Math.random() * 2 + 1).toFixed(1)}M plays</Text>
@@ -67,7 +69,7 @@ const ArtistScreen = ({ route, navigation }) => {
 
         {/* Artist Info */}
         <View style={styles.artistInfo}>
-          <Image source={{ uri: artist.image }} style={styles.artistImage} />
+          <Image source={artist.image} style={styles.artistImage} />
           <Text style={styles.artistName}>{artist.name}</Text>
           <Text style={styles.songCount}>{artist.songs}</Text>
           
@@ -221,4 +223,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ArtistScreen; 
+export default ArtistScreen;

@@ -34,25 +34,42 @@ const ListeningScreen = ({ navigation, route }) => {
     setupAudio();
   }, []);
 
-  // Dọn dẹp audio khi màn hình bị unmount hoặc mất focus
+  // Cleanup function - only unload when really leaving the screen
   useEffect(() => {
-    const unsubscribeFocus = navigation.addListener('blur', () => {
-      console.log('Screen blurred, cleaning up audio...');
-      cleanupAudio();
-    });
-
-    const unsubscribeUnmount = navigation.addListener('beforeRemove', () => {
-      console.log('Screen is being removed, cleaning up audio...');
-      cleanupAudio();
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Prevent audio unloading when navigating to these screens
+      if (
+        e.data.action.payload?.name === 'Queue' ||
+        e.data.action.payload?.name === 'Comment' ||
+        e.data.action.payload?.name === 'Share'
+      ) {
+        e.preventDefault();
+        return;
+      }
+      
+      // Unload audio when actually leaving the screen
+      if (sound) {
+        sound.unloadAsync();
+      }
     });
 
     return () => {
-      console.log('Unmounting ListeningScreen, cleaning up audio...');
-      cleanupAudio();
-      unsubscribeFocus();
-      unsubscribeUnmount();
+      unsubscribe();
     };
-  }, [navigation, sound, isSoundLoaded]); // Thêm isSoundLoaded vào dependency
+  }, [sound, navigation]);
+
+  // Handle focus event to resume playing when returning
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (sound && isPlaying) {
+        sound.playAsync();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [sound, isPlaying, navigation]);
 
   // Load audio khi bài hát thay đổi
   useEffect(() => {
@@ -210,6 +227,11 @@ const ListeningScreen = ({ navigation, route }) => {
     const currentIndex = songs.findIndex(s => s.id === currentSong.id);
     const nextIndex = (currentIndex + 1) % songs.length;
     setCurrentSong(songs[nextIndex]);
+    // Set shouldAutoPlay to true when changing songs
+    route.params = {
+      ...route.params,
+      shouldAutoPlay: true
+    };
   };
 
   const playPreviousSong = async () => {
@@ -220,6 +242,11 @@ const ListeningScreen = ({ navigation, route }) => {
     const currentIndex = songs.findIndex(s => s.id === currentSong.id);
     const previousIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
     setCurrentSong(songs[previousIndex]);
+    // Set shouldAutoPlay to true when changing songs
+    route.params = {
+      ...route.params,
+      shouldAutoPlay: true
+    };
   };
 
   const playSound = async () => {
@@ -227,6 +254,31 @@ const ListeningScreen = ({ navigation, route }) => {
       await sound.playAsync();
       setIsPlaying(true);
     }
+  };
+
+  const handleQueuePress = () => {
+    // Get first 5 songs for the queue
+    const queuePlaylist = songs.slice(0, 5);
+    
+    // Don't stop the music when going to queue
+    navigation.navigate('Queue', {
+      playlist: queuePlaylist,
+      currentSong: currentSong
+    });
+  };
+
+  const handleCommentPress = () => {
+    // Don't stop the music when going to comments
+    navigation.navigate('Comment', {
+      song: currentSong
+    });
+  };
+
+  const handleSharePress = () => {
+    // Don't stop the music when going to share
+    navigation.navigate('Share', {
+      song: currentSong
+    });
   };
 
   return (
@@ -238,12 +290,7 @@ const ListeningScreen = ({ navigation, route }) => {
             <Icon name="chevron-down" size={30} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Now Playing</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Queue', {
-              playlist: route.params?.playlist || [currentSong],
-              currentSong: currentSong,
-            })}
-          >
+          <TouchableOpacity onPress={handleQueuePress}>
             <Icon name="list" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -341,15 +388,15 @@ const ListeningScreen = ({ navigation, route }) => {
               color={isLiked ? '#9C27B0' : '#fff'}
             />
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => navigation.navigate('Comment')}
+            onPress={handleCommentPress}
           >
             <Icon name="chatbubble-outline" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => navigation.navigate('Share')}
+            onPress={handleSharePress}
           >
             <Icon name="share-outline" size={24} color="#fff" />
           </TouchableOpacity>

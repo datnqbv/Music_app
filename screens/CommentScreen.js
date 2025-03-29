@@ -50,7 +50,7 @@ const CommentScreen = () => {
     },
     {
       id: '5',
-      username: 'Nghiện ',
+      username: 'Doanh Nhân 100 tỷ',
       comment: 'This artist never disappoints!',
       time: '6h ago',
       avatar: require('../assets/sena.jpg'),
