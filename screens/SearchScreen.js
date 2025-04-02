@@ -11,10 +11,10 @@ const SearchScreen = () => {
   ];
 
   const recentSearches = [
-    'Lorem ipsum',
-    'Lorem ipsum',
-    'Lorem ipsum',
-    'Lorem ipsum'
+    'Lost in love',
+    'Dream Space',
+    'Midnight Rain',
+    'Toresto'
   ];
 
   return (

@@ -21,7 +21,6 @@ const StartScreen = () => {
       style={styles.container}
     >
       <View style={styles.content}>
-        {/* Logo and Text */}
         <View style={styles.centerContent}>
           <View style={styles.logoContainer}>
             <Image 
@@ -34,7 +33,6 @@ const StartScreen = () => {
           <Text style={styles.subtitle}>Datsieucute</Text>
         </View>
 
-        {/* Get Started Button */}
         <TouchableOpacity 
           style={styles.button}
           onPress={() => navigation.navigate('Onboarding')}

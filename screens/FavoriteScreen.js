@@ -25,6 +25,17 @@ const FavoriteScreen = ({ navigation }) => {
     }
   };
 
+  const handleShuffle = () => {
+    if (favoriteSongs.length > 0) {
+      const randomIndex = Math.floor(Math.random() * favoriteSongs.length);
+      navigation.navigate('Listening', {
+        song: favoriteSongs[randomIndex],
+        playlist: favoriteSongs,
+        currentIndex: randomIndex,
+      });
+    }
+  };
+
   const renderSongItem = (song, index) => (
     <TouchableOpacity
       key={song.id}
@@ -76,7 +87,10 @@ const FavoriteScreen = ({ navigation }) => {
             <Icon name="play" size={22} color="#000" />
             <Text style={styles.playButtonText}>PLAY</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shuffleButton}>
+          <TouchableOpacity 
+            style={styles.shuffleButton}
+            onPress={handleShuffle}
+          >
             <Icon name="shuffle" size={22} color="#fff" />
             <Text style={styles.shuffleButtonText}>SHUFFLE</Text>
           </TouchableOpacity>

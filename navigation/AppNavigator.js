@@ -27,6 +27,7 @@ import LanguageScreen from '../screens/settings/LanguageScreen';
 import StorageScreen from '../screens/settings/StorageScreen';
 import ArtistScreen from '../screens/ArtistScreen';
 import NotificationScreen from '../screens/NotificationScreen';
+import ViewAllScreen from '../screens/ViewAllScreen';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const Stack = createStackNavigator();
@@ -96,6 +97,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Storage" component={StorageScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Artist" component={ArtistScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Notification" component={NotificationScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ViewAll" component={ViewAllScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };

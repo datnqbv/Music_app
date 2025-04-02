@@ -50,7 +50,9 @@ const ForgetPasswordScreen = () => {
             <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Forget Password</Text>
-          <View style={styles.headerPlaceholder} /> {/* Placeholder để cân bằng layout */}
+          <View style={styles.headerPlaceholder}>
+            <Text style={{ display: 'none' }}>Placeholder để cân bằng layout</Text>
+          </View>
         </View>
 
         {/* Form */}

@@ -16,7 +16,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const SignUpScreen = () => {
   const navigation = useNavigation();
   const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState(''); // Thêm trường Username
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,7 +25,7 @@ const SignUpScreen = () => {
   const validate = () => {
     let tempErrors = {};
     if (!fullName) tempErrors.fullName = 'Họ tên không được để trống';
-    if (!username) tempErrors.username = 'Tên đăng nhập không được để trống'; // Thêm validate cho Username
+    if (!username) tempErrors.username = 'Tên đăng nhập không được để trống';
     if (!email) tempErrors.email = 'Email không được để trống';
     if (!password) tempErrors.password = 'Mật khẩu không được để trống';
     if (!confirmPassword) tempErrors.confirmPassword = 'Xác nhận mật khẩu không được để trống';
@@ -36,7 +36,6 @@ const SignUpScreen = () => {
 
   const handleSignUp = () => {
     if (validate()) {
-      // Xử lý logic đăng ký ở đây
       navigation.navigate('Login');
     } else {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
@@ -49,18 +48,15 @@ const SignUpScreen = () => {
       style={styles.container}
     >
       <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Sign Up</Text>
-          <View style={styles.headerPlaceholder} /> {/* Placeholder để cân bằng layout */}
+          <View style={styles.headerPlaceholder} />
         </View>
 
-        {/* Form */}
         <View style={styles.form}>
-          {/* Full Name Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Full Name"
@@ -73,7 +69,6 @@ const SignUpScreen = () => {
             {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
           </View>
 
-          {/* Username Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Username"
@@ -86,7 +81,6 @@ const SignUpScreen = () => {
             {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
           </View>
 
-          {/* Email Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Email"
@@ -100,7 +94,6 @@ const SignUpScreen = () => {
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
 
-          {/* Password Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Password"
@@ -113,7 +106,6 @@ const SignUpScreen = () => {
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
-          {/* Confirm Password Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Confirm Password"
@@ -126,7 +118,6 @@ const SignUpScreen = () => {
             {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
           </View>
 
-          {/* Sign Up Button */}
           <TouchableOpacity onPress={handleSignUp}>
             <LinearGradient
               colors={['#A78BFA', '#6A5ACD']}
@@ -136,7 +127,6 @@ const SignUpScreen = () => {
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Login Link */}
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>

@@ -35,7 +35,6 @@ const LoginScreen = () => {
 
   const handleLogin = () => {
     if (validate()) {
-      // Xử lý logic đăng nhập ở đây
       navigation.navigate('Main', { screen: 'Home' });
     } else {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
@@ -48,25 +47,21 @@ const LoginScreen = () => {
       style={styles.container}
     >
       <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
-        {/* Header with Back Button */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
-        {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/logo.png')} // Đảm bảo file logo.png đã có trong thư mục assets
+            source={require('../assets/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
         </View>
 
-        {/* Form */}
         <View style={styles.form}>
-          {/* Username Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Enter Username"
@@ -80,7 +75,6 @@ const LoginScreen = () => {
             {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
           </View>
 
-          {/* Password Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Enter Password"
@@ -93,7 +87,6 @@ const LoginScreen = () => {
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
-          {/* Remember Me and Forgot Password */}
           <View style={styles.rememberContainer}>
             <TouchableOpacity
               style={styles.checkboxContainer}
@@ -109,7 +102,6 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Login Button */}
           <TouchableOpacity onPress={handleLogin}>
             <LinearGradient
               colors={['#A78BFA', '#6A5ACD']}
@@ -119,14 +111,12 @@ const LoginScreen = () => {
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Or Divider */}
           <View style={styles.orContainer}>
             <View style={styles.orLine} />
             <Text style={styles.orText}>or</Text>
             <View style={styles.orLine} />
           </View>
 
-          {/* Social Login */}
           <View style={styles.socialContainer}>
             <TouchableOpacity style={[styles.socialButton, styles.googleButton]}>
               <Image
@@ -143,7 +133,6 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Sign Up Link */}
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>

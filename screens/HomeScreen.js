@@ -31,11 +31,17 @@ const HomeScreen = () => {
   }));
   const popularAlbums = songs.slice(0, 3);
 
-  const renderSection = (title, items, renderItem) => (
+  const renderSection = (title, items, renderItem, type) => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        <TouchableOpacity>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('ViewAll', { 
+            title, 
+            data: items,
+            type 
+          })}
+        >
           <Text style={styles.seeAllText}>See all</Text>
         </TouchableOpacity>
       </View>
@@ -80,7 +86,10 @@ const HomeScreen = () => {
       >
         {/* Profile Section */}
         <View style={styles.profileSection}>
-          <View style={styles.profileLeft}>
+          <TouchableOpacity 
+            style={styles.profileLeft}
+            onPress={() => navigation.navigate('Profile')}
+          >
             <View style={styles.profileAvatar}>
               <Image 
                 source={require('../assets/mona.png')}
@@ -89,10 +98,10 @@ const HomeScreen = () => {
               />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Mona<Text style={styles.profileNameBold}> LISA</Text></Text>
-              <Text style={styles.profileDescription}>Loren to sokoko</Text>
+              <Text style={styles.profileName}>Đạt<Text style={styles.profileNameBold}> Sieucute</Text></Text>
+              <Text style={styles.profileDescription}>Khai phá âm lượng</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* New Releases */}
@@ -103,7 +112,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <Image
-              source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
+              source={item.image}
               style={styles.releaseCover}
               resizeMode="cover"
             />
@@ -113,7 +122,7 @@ const HomeScreen = () => {
             <Text style={styles.releaseArtist}>{item.artist}</Text>
             <Text style={styles.releaseDuration}>{item.duration}</Text>
           </TouchableOpacity>
-        ))}
+        ), 'releases')}
 
         {/* Popular Videos */}
         {renderSection('Popular Videos', popularVideos, (item) => (
@@ -122,22 +131,24 @@ const HomeScreen = () => {
             key={item.id}
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
-            <View style={styles.videoContainer}>
+            <View style={styles.videoCard}>
               <Image
-                source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
-                style={styles.videoImage}
+                source={item.image}
+                style={styles.videoBackground}
                 resizeMode="cover"
               />
-              <View style={styles.playIconContainer}>
-                <Icon name="play" size={24} color="#fff" />
+              <View style={styles.videoOverlay}>
+                <View style={styles.playButton}>
+                  <Icon name="play" size={30} color="#fff" />
+                </View>
               </View>
             </View>
             <Text style={styles.videoTitle} numberOfLines={1}>
               {item.title}
             </Text>
-            <Text style={styles.videoDuration}>{item.duration}</Text>
+            <Text style={styles.videoArtist}>{item.artist}</Text>
           </TouchableOpacity>
-        ))}
+        ), 'videos')}
 
         {/* Trends Videos */}
         {renderSection('Trends Videos 2023', trendsVideos, (item) => (
@@ -146,22 +157,24 @@ const HomeScreen = () => {
             key={item.id}
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
-            <View style={styles.videoContainer}>
+            <View style={styles.videoCard}>
               <Image
-                source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
-                style={styles.videoImage}
+                source={item.image}
+                style={styles.videoBackground}
                 resizeMode="cover"
               />
-              <View style={styles.playIconContainer}>
-                <Icon name="play" size={24} color="#fff" />
+              <View style={styles.videoOverlay}>
+                <View style={styles.playButton}>
+                  <Icon name="play" size={30} color="#fff" />
+                </View>
               </View>
             </View>
             <Text style={styles.videoTitle} numberOfLines={1}>
               {item.title}
             </Text>
-            <Text style={styles.videoDuration}>{item.duration}</Text>
+            <Text style={styles.videoArtist}>{item.artist}</Text>
           </TouchableOpacity>
-        ))}
+        ), 'videos')}
 
         {/* Popular Artists */}
         {renderSection('Popular Artists 2023', popularArtists, (item) => (
@@ -171,7 +184,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Artist', { artist: item })}
           >
             <Image
-              source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
+              source={item.image}
               style={styles.artistAvatar}
               resizeMode="cover"
             />
@@ -182,7 +195,7 @@ const HomeScreen = () => {
               {item.songs}
             </Text>
           </TouchableOpacity>
-        ))}
+        ), 'artists')}
 
         {/* Popular Albums */}
         {renderSection('Popular Album 2023', popularAlbums, (item) => (
@@ -192,7 +205,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Listening', { song: item })}
           >
             <Image
-              source={item.image} // Sửa: Bỏ uri, truyền trực tiếp đối tượng tài nguyên
+              source={item.image}
               style={styles.albumCover}
               resizeMode="cover"
             />
@@ -201,7 +214,7 @@ const HomeScreen = () => {
             </Text>
             <Text style={styles.albumDuration}>{item.duration}</Text>
           </TouchableOpacity>
-        ))}
+        ), 'albums')}
       </ScrollView>
     </LinearGradient>
   );
@@ -364,49 +377,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#A78BFA',
   },
-  videoItem: {
-    width: 200,
-    marginRight: 15,
-  },
-  videoContainer: {
-    width: '100%',
-    height: 120,
-    position: 'relative',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  videoImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-  },
-  playIconContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 10,
-  },
-  videoTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 5,
-  },
-  videoDuration: {
-    fontSize: 12,
-    color: '#A78BFA',
-  },
   artistItem: {
     width: (width - 60) / 2,
     marginRight: 15,
@@ -469,6 +439,47 @@ const styles = StyleSheet.create({
   albumDuration: {
     fontSize: 12,
     color: '#A78BFA',
+  },
+  videoItem: {
+    width: 280,
+    marginRight: 15,
+  },
+  videoCard: {
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 10,
+    position: 'relative',
+  },
+  videoBackground: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  videoOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  videoArtist: {
+    fontSize: 14,
+    color: '#B0B0B0',
   },
 });
 

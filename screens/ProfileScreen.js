@@ -89,7 +89,7 @@ const ProfileScreen = ({ navigation }) => {
             source={require('../assets/mona.png')}
             style={styles.profilePicture}
           />
-          <Text style={styles.profileName}>Đạt Phùng </Text>
+          <Text style={styles.profileName}>Đạt Sieucute </Text>
           <Text style={styles.profileUsername}>@Datsieucute</Text>
         </View>
 
