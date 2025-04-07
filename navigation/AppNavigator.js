@@ -1,6 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaView, Platform, Dimensions } from 'react-native';
 import StartScreen from '../screens/StartScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -33,6 +34,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const { height } = Dimensions.get('window');
+const isIPhoneX = Platform.OS === 'ios' && (height === 812 || height === 896);
+
 // Tạo Bottom Tab Navigator cho Home, Favorite, Library, Profile
 const MainTabs = () => {
   return (
@@ -56,8 +60,9 @@ const MainTabs = () => {
         tabBarStyle: {
           backgroundColor: '#2A1B3D',
           borderTopWidth: 0,
-          paddingBottom: 5,
+          paddingBottom: isIPhoneX ? 30 : 5,
           paddingTop: 5,
+          height: isIPhoneX ? 85 : 60,
         },
         headerShown: false,
       })}

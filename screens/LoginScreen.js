@@ -41,6 +41,13 @@ const LoginScreen = () => {
     }
   };
 
+  const handleLogout = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Onboarding' }],
+    });
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -48,7 +55,7 @@ const LoginScreen = () => {
     >
       <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLogout}>
             <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
@@ -158,7 +165,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    marginTop: Platform.OS === 'ios' ? 40 : 0,
+    marginTop: Platform.OS === 'ios' ? 40 : 20,
     width: '100%',
   },
   logoContainer: {

@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Image,
+  ImageBackground,
+  Image, // Thêm import Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -17,42 +18,51 @@ const OnboardingScreen = () => {
   const navigation = useNavigation();
 
   return (
-    <LinearGradient 
-      colors={['#1E0A3C', '#000000']} 
+    <ImageBackground
+      source={require('../assets/galaxy.png')} // Hình ảnh nền
       style={styles.container}
+      resizeMode="cover"
     >
-      <View style={styles.content}>
-        <View style={styles.spacer} />
-        <View style={styles.bottomSection}>
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>Đạt Siêu Cute </Text>
-            <Text style={styles.description}>
-              Welcome to the Music App
-            </Text>
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0.3)', 'rgba(0, 0, 0, 0.9)']} // Lớp phủ gradient
+        style={styles.overlay}
+      >
+        <View style={styles.content}>
+          <View style={styles.spacer} />
+          <View style={styles.bottomSection}>
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>Đạt Siêu Cute</Text>
+              <Text style={styles.description}>
+                Welcome to the Music App
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.nextButton}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <View style={styles.buttonCircle}>
+                <Icon name="arrow-forward" size={24} color="#fff" />
+              </View>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity 
-            style={styles.nextButton}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <View style={styles.buttonCircle}>
-              <Icon name="arrow-forward" size={24} color="#fff" />
-            </View>
-          </TouchableOpacity>
+          <Image
+            source={require('../assets/progress-bar.png')} // Sửa lại thành progress-bar.png
+            style={styles.progressBar}
+            resizeMode="contain"
+          />
         </View>
-        
-        <Image 
-          source={require('../assets/progress-bar.png')}
-          style={styles.progressBar}
-          resizeMode="contain"
-        />
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  overlay: {
     flex: 1,
   },
   content: {

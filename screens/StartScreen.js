@@ -6,11 +6,14 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  SafeAreaView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
 const { height } = Dimensions.get('window');
+const isIPhoneX = Platform.OS === 'ios' && (height === 812 || height === 896);
 
 const StartScreen = () => {
   const navigation = useNavigation();
@@ -20,26 +23,29 @@ const StartScreen = () => {
       colors={['#1E0A3C', '#000000']} 
       style={styles.container}
     >
-      <View style={styles.content}>
-        <View style={styles.centerContent}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../assets/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <View style={styles.centerContent}>
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.title}>MUSIC APP</Text>
+            <Text style={styles.subtitle}>Datsieucute</Text>
           </View>
-          <Text style={styles.title}>MUSIC APP</Text>
-          <Text style={styles.subtitle}>Datsieucute</Text>
-        </View>
 
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.navigate('Onboarding')}
-        >
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={() => navigation.navigate('Onboarding')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.buttonText}>Get Started</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
@@ -48,17 +54,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  safeArea: {
+    flex: 1,
+  },
   content: {
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 30,
-    paddingBottom: 50,
+    paddingBottom: isIPhoneX ? 70 : 50,
   },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: isIPhoneX ? 20 : 0,
   },
   logoContainer: {
     width: 120,
