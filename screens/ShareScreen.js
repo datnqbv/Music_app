@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -13,6 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const ShareScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { song } = route.params || {};
 
   const shareOptions = [
     {
@@ -87,21 +89,20 @@ const ShareScreen = () => {
 
       {/* Song Preview */}
       <View style={styles.songPreview}>
-        <View style={styles.songImage}>
-          <Icon name="musical-notes" size={24} color="#fff" />
-        </View>
         <View style={styles.songInfo}>
-          <Text style={styles.songTitle}>Song Title</Text>
-          <View style={styles.controls}>
-            <TouchableOpacity>
-              <Icon name="play-back" size={20} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Icon name="play" size={20} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Icon name="play-forward" size={20} color="#fff" />
-            </TouchableOpacity>
+          {song?.image ? (
+            <Image 
+              source={song.image} 
+              style={styles.songImage}
+            />
+          ) : (
+            <View style={styles.songImage}>
+              <Icon name="musical-notes" size={24} color="#fff" />
+            </View>
+          )}
+          <View style={styles.songDetails}>
+            <Text style={styles.songTitle}>{song?.title || 'No song playing'}</Text>
+            <Text style={styles.artistName}>{song?.artist || 'Unknown artist'}</Text>
           </View>
         </View>
       </View>
@@ -141,35 +142,36 @@ const styles = StyleSheet.create({
     width: 24,
   },
   songPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
     margin: 20,
     padding: 15,
     borderRadius: 10,
   },
+  songInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   songImage: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#8B00FF',
+    width: 60,
+    height: 60,
     borderRadius: 8,
+    marginRight: 15,
+    backgroundColor: '#8B00FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
   },
-  songInfo: {
+  songDetails: {
     flex: 1,
   },
   songTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
+  artistName: {
+    fontSize: 14,
+    color: '#888',
   },
   sectionTitle: {
     color: '#fff',

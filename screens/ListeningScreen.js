@@ -400,7 +400,16 @@ const ListeningScreen = ({ navigation, route }) => {
           >
             <Icon name="share-outline" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('MenuList', { 
+              song: {
+                title: currentSong.title,
+                artist: currentSong.artist,
+                image: currentSong.image
+              }
+            })}
+          >
             <Icon name="ellipsis-horizontal" size={24} color="#fff" />
           </TouchableOpacity>
         </View>

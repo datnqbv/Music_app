@@ -5,66 +5,79 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const MenuListScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { song } = route.params || {};
 
   const menuOptions = [
     {
       id: '1',
       name: 'Shuffle',
       icon: 'shuffle',
+      screen: 'Listening',
     },
     {
       id: '2',
       name: 'Repeat',
       icon: 'repeat',
+      screen: 'Listening',
     },
     {
       id: '3',
       name: 'Repeat One',
       icon: 'help-circle-outline',
+      screen: 'Listening',
     },
     {
       id: '4',
       name: 'Favorite',
       icon: 'heart-outline',
+      screen: 'Favorite',
     },
     {
       id: '5',
       name: 'Add Your Playlist',
       icon: 'add',
+      screen: 'Library',
     },
     {
       id: '6',
       name: 'Add Your Album',
       icon: 'albums-outline',
+      screen: 'Library',
     },
     {
       id: '7',
       name: 'Download',
       icon: 'download-outline',
+      screen: 'Download',
     },
     {
       id: '8',
       name: 'Share',
       icon: 'share-social-outline',
+      screen: 'Share',
     },
   ];
+
+  const handleMenuItemPress = (item) => {
+    if (item.screen) {
+      navigation.navigate(item.screen);
+    }
+  };
 
   const renderMenuItem = (item) => (
     <TouchableOpacity 
       key={item.id} 
       style={styles.menuItem}
-      onPress={() => {
-        if (item.name === 'Share') {
-          navigation.navigate('Share');
-        }
-      }}
+      onPress={() => handleMenuItemPress(item)}
     >
       <Icon name={item.icon} size={24} color="#fff" style={styles.menuIcon} />
       <Text style={styles.menuText}>{item.name}</Text>
@@ -84,13 +97,21 @@ const MenuListScreen = () => {
 
       {/* Song Preview */}
       <View style={styles.songPreview}>
-        <View style={styles.songImage}>
-          <Icon name="musical-notes" size={24} color="#fff" />
-        </View>
         <View style={styles.songInfo}>
-          <Text style={styles.songTitle}>Song Title</Text>
-          <Text style={styles.artistName}>Artist</Text>
-          <Text style={styles.duration}>5:10</Text>
+          {song?.image ? (
+            <Image 
+              source={song.image} 
+              style={styles.songImage}
+            />
+          ) : (
+            <View style={styles.songImage}>
+              <Icon name="musical-notes" size={24} color="#fff" />
+            </View>
+          )}
+          <View style={styles.songDetails}>
+            <Text style={styles.songTitle}>{song?.title || 'No song playing'}</Text>
+            <Text style={styles.artistName}>{song?.artist || 'Unknown artist'}</Text>
+          </View>
         </View>
       </View>
 
@@ -126,35 +147,36 @@ const styles = StyleSheet.create({
     width: 24,
   },
   songPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
     margin: 20,
     padding: 15,
     borderRadius: 10,
   },
+  songInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   songImage: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#8B00FF',
+    width: 60,
+    height: 60,
     borderRadius: 8,
+    marginRight: 15,
+    backgroundColor: '#8B00FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
   },
-  songInfo: {
+  songDetails: {
     flex: 1,
   },
   songTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
     marginBottom: 4,
   },
   artistName: {
-    color: '#999',
     fontSize: 14,
-    marginBottom: 4,
+    color: '#888',
   },
   duration: {
     color: '#666',

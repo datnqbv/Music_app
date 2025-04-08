@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import { songs } from '../data/songs';
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
@@ -21,6 +22,7 @@ const NotificationScreen = () => {
       message: 'Check out the new song from your favorite artist',
       time: '2h ago',
       type: 'music',
+      songId: '1',
     },
     {
       id: '2',
@@ -28,6 +30,7 @@ const NotificationScreen = () => {
       message: 'Your weekly playlist has been updated',
       time: '5h ago',
       type: 'playlist',
+      screen: 'Library',
     },
     {
       id: '3',
@@ -35,6 +38,7 @@ const NotificationScreen = () => {
       message: 'Someone started following your playlist',
       time: '1d ago',
       type: 'social',
+      screen: 'Profile',
     },
   ];
 
@@ -48,6 +52,17 @@ const NotificationScreen = () => {
         return <Icon name="people" size={24} color="#9C27B0" />;
       default:
         return <Icon name="notifications" size={24} color="#9C27B0" />;
+    }
+  };
+
+  const handleNotificationPress = (notification) => {
+    if (notification.type === 'music' && notification.songId) {
+      const newReleaseSong = songs.find(song => song.id === notification.songId);
+      if (newReleaseSong) {
+        navigation.navigate('Listening', { song: newReleaseSong });
+      }
+    } else if (notification.screen) {
+      navigation.navigate(notification.screen);
     }
   };
 
@@ -70,7 +85,11 @@ const NotificationScreen = () => {
       {/* Notifications List */}
       <ScrollView style={styles.notificationList}>
         {notifications.map((notification) => (
-          <TouchableOpacity key={notification.id} style={styles.notificationItem}>
+          <TouchableOpacity 
+            key={notification.id} 
+            style={styles.notificationItem}
+            onPress={() => handleNotificationPress(notification)}
+          >
             <View style={styles.iconContainer}>
               {renderIcon(notification.type)}
             </View>
