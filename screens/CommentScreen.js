@@ -200,12 +200,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A2A2A',
     borderRadius: 25,
     paddingHorizontal: 15,
+    marginBottom: 20,
   },
   input: {
     flex: 1,
     height: 40,
     color: '#fff',
     fontSize: 16,
+    
   },
   sendButton: {
     padding: 8,
