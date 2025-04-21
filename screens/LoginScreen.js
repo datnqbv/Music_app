@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,14 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { saveUserData, getUserData } from '../data/storage';
 
 const { width } = Dimensions.get('window');
 
+/**
+ * LoginScreen component - Màn hình đăng nhập
+ * Xử lý việc đăng nhập và lưu trữ thông tin người dùng
+ */
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +30,23 @@ const LoginScreen = () => {
   const [isRemembered, setIsRemembered] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Kiểm tra thông tin đăng nhập đã lưu
+  useEffect(() => {
+    const checkSavedLogin = async () => {
+      const savedUserData = await getUserData();
+      if (savedUserData && savedUserData.isRemembered) {
+        setUsername(savedUserData.username);
+        setPassword(savedUserData.password);
+        setIsRemembered(true);
+      }
+    };
+    checkSavedLogin();
+  }, []);
+
+  /**
+   * Validate form đăng nhập
+   * @returns {boolean} true nếu form hợp lệ, false nếu không
+   */
   const validate = () => {
     let tempErrors = {};
     if (!username) tempErrors.username = 'Tên đăng nhập không được để trống';
@@ -33,14 +55,31 @@ const LoginScreen = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  /**
+   * Xử lý đăng nhập
+   * Lưu thông tin người dùng nếu chọn Remember me
+   */
+  const handleLogin = async () => {
     if (validate()) {
+      // Lưu thông tin đăng nhập nếu người dùng chọn Remember me
+      if (isRemembered) {
+        await saveUserData({
+          username,
+          password,
+          isRemembered,
+          lastLogin: new Date().toISOString(),
+        });
+      }
       navigation.navigate('Main', { screen: 'Home' });
     } else {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
     }
   };
 
+  /**
+   * Xử lý đăng xuất
+   * Reset navigation stack về màn hình Onboarding
+   */
   const handleLogout = () => {
     navigation.reset({
       index: 0,

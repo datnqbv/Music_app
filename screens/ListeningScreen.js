@@ -14,9 +14,14 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { Audio } from 'expo-av';
 import Slider from '@react-native-community/slider';
 import { songs } from '../data/songs';
+import { saveRecentPlayed, getRecentPlayed, saveFavoriteSongs, getFavoriteSongs } from '../data/storage';
 
 const { width } = Dimensions.get('window');
 
+/**
+ * ListeningScreen component - Màn hình nghe nhạc
+ * Xử lý việc phát nhạc và lưu trữ lịch sử nghe nhạc
+ */
 const ListeningScreen = ({ navigation, route }) => {
   const { song: initialSong, playlist = [], currentIndex = 0, shouldAutoPlay = false } = route.params || {};
   const [isPlaying, setIsPlaying] = useState(false);
@@ -27,7 +32,31 @@ const ListeningScreen = ({ navigation, route }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
-  const [isSoundLoaded, setIsSoundLoaded] = useState(false); // Thêm trạng thái để theo dõi sound
+  const [isSoundLoaded, setIsSoundLoaded] = useState(false);
+  const [recentPlayed, setRecentPlayed] = useState([]);
+  const [favoriteSongs, setFavoriteSongs] = useState([]);
+
+  // Load dữ liệu đã lưu khi component mount
+  useEffect(() => {
+    loadSavedData();
+  }, []);
+
+  /**
+   * Load dữ liệu đã lưu từ AsyncStorage
+   */
+  const loadSavedData = async () => {
+    try {
+      const [recent, favorites] = await Promise.all([
+        getRecentPlayed(),
+        getFavoriteSongs()
+      ]);
+      setRecentPlayed(recent);
+      setFavoriteSongs(favorites);
+      setIsLiked(favorites.some(song => song.id === currentSong?.id));
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+    }
+  };
 
   // Thiết lập audio mode khi màn hình được mount
   useEffect(() => {
@@ -112,6 +141,7 @@ const ListeningScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (initialSong) {
       setCurrentSong(initialSong);
+      saveToRecentPlayed(initialSong);
     }
   }, [initialSong]);
 
@@ -281,6 +311,41 @@ const ListeningScreen = ({ navigation, route }) => {
     });
   };
 
+  /**
+   * Lưu bài hát vào danh sách đã nghe gần đây
+   */
+  const saveToRecentPlayed = async (song) => {
+    try {
+      const newRecentPlayed = [
+        song,
+        ...recentPlayed.filter(s => s.id !== song.id)
+      ].slice(0, 50); // Giới hạn 50 bài hát gần đây
+      await saveRecentPlayed(newRecentPlayed);
+      setRecentPlayed(newRecentPlayed);
+    } catch (error) {
+      console.error('Error saving to recent played:', error);
+    }
+  };
+
+  /**
+   * Xử lý thêm/xóa bài hát yêu thích
+   */
+  const handleLikePress = async () => {
+    try {
+      let newFavorites;
+      if (isLiked) {
+        newFavorites = favoriteSongs.filter(song => song.id !== currentSong.id);
+      } else {
+        newFavorites = [currentSong, ...favoriteSongs];
+      }
+      await saveFavoriteSongs(newFavorites);
+      setFavoriteSongs(newFavorites);
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+    }
+  };
+
   return (
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -380,7 +445,7 @@ const ListeningScreen = ({ navigation, route }) => {
         <View style={styles.bottomActions}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => setIsLiked(!isLiked)}
+            onPress={handleLikePress}
           >
             <Icon
               name={isLiked ? 'heart' : 'heart-outline'}

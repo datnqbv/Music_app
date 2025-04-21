@@ -12,7 +12,12 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { saveUserData } from '../data/storage';
 
+/**
+ * SignUpScreen component - Màn hình đăng ký
+ * Xử lý việc đăng ký và lưu trữ thông tin người dùng
+ */
 const SignUpScreen = () => {
   const navigation = useNavigation();
   const [fullName, setFullName] = useState('');
@@ -22,6 +27,10 @@ const SignUpScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
 
+  /**
+   * Validate form đăng ký
+   * @returns {boolean} true nếu form hợp lệ, false nếu không
+   */
   const validate = () => {
     let tempErrors = {};
     if (!fullName) tempErrors.fullName = 'Họ tên không được để trống';
@@ -34,9 +43,45 @@ const SignUpScreen = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSignUp = () => {
+  /**
+   * Xử lý đăng ký
+   * Lưu thông tin người dùng vào AsyncStorage
+   */
+  const handleSignUp = async () => {
     if (validate()) {
-      navigation.navigate('Login');
+      try {
+        // Tạo đối tượng người dùng mới
+        const newUser = {
+          fullName,
+          username,
+          email,
+          password,
+          createdAt: new Date().toISOString(),
+          isRemembered: false,
+          lastLogin: null,
+          profileImage: null,
+          favoriteSongs: [],
+          playlists: [],
+        };
+
+        // Lưu thông tin người dùng
+        await saveUserData(newUser);
+
+        // Hiển thị thông báo thành công
+        Alert.alert(
+          'Thành công',
+          'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Login'),
+            },
+          ]
+        );
+      } catch (error) {
+        console.error('Error saving user data:', error);
+        Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi đăng ký. Vui lòng thử lại.');
+      }
     } else {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
     }
