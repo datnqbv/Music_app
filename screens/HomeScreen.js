@@ -59,14 +59,14 @@ const HomeScreen = () => {
     <LinearGradient colors={['#4A148C', '#1E0A3C']} style={styles.container}>
       {/* Fixed Header */}
       <View style={styles.header}>
-        <View style={styles.searchContainer}>
+        <TouchableOpacity 
+          style={styles.searchContainer}
+          onPress={() => navigation.navigate('Search')}
+          activeOpacity={0.7}
+        >
           <Icon name="search" size={20} color="#B0B0B0" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Track, artist, track or album"
-            placeholderTextColor="#B0B0B0"
-          />
-        </View>
+          <Text style={styles.searchPlaceholder}>Track, artist, track or album</Text>
+        </TouchableOpacity>
         <TouchableOpacity 
           style={styles.notificationButton}
           onPress={() => navigation.navigate('Notification')}
@@ -247,9 +247,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
     height: 40,
   },
-  searchInput: {
+  searchPlaceholder: {
     flex: 1,
-    color: '#fff',
+    color: '#B0B0B0',
     marginLeft: 8,
     fontSize: 16,
   },

@@ -16,26 +16,19 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const ForgetPasswordScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
-  const [errors, setErrors] = useState({});
-
-  const validate = () => {
-    let tempErrors = {};
-    if (!email) tempErrors.email = 'Email không được để trống';
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
 
   const handleResetPassword = () => {
-    if (validate()) {
-      // Xử lý logic quên mật khẩu ở đây
-      Alert.alert(
-        'Thành công',
-        'Link đặt lại mật khẩu đã được gửi đến email của bạn',
-        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
-      );
-    } else {
-      Alert.alert('Lỗi', 'Vui lòng điền email của bạn');
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
     }
+    
+    // Handle password reset logic here
+    Alert.alert(
+      'Success',
+      'Password reset link has been sent to your email',
+      [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+    );
   };
 
   return (
@@ -43,16 +36,19 @@ const ForgetPasswordScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
+      <LinearGradient 
+        colors={['#1E0A3C', '#000000']} 
+        style={styles.content}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      >
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
+            <Icon name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Forget Password</Text>
-          <View style={styles.headerPlaceholder}>
-            <Text style={{ display: 'none' }}>Placeholder để cân bằng layout</Text>
-          </View>
+          <Text style={styles.headerTitle}>Forgot Password</Text>
+          <View style={{ width: 24 }} />
         </View>
 
         {/* Form */}
@@ -61,37 +57,36 @@ const ForgetPasswordScreen = () => {
             Enter your email below to receive password reset instructions
           </Text>
 
-          {/* Email Input */}
-          <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Email</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
               placeholder="Your email"
-              placeholderTextColor="#B0B0B0"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={email}
               onChangeText={setEmail}
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
 
-          {/* Send Reset Link Button */}
-          <TouchableOpacity onPress={handleResetPassword}>
+          <TouchableOpacity onPress={handleResetPassword} style={styles.resetButton}>
             <LinearGradient
-              colors={['#A78BFA', '#6A5ACD']}
-              style={styles.resetButton}
+              colors={['#4C35B4', '#9C27B0']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradient}
             >
               <Text style={styles.resetButtonText}>Send Reset Link</Text>
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Back to Login Link */}
           <TouchableOpacity
             style={styles.backToLogin}
             onPress={() => navigation.navigate('Login')}
           >
-            <Icon name="arrow-back-outline" size={20} color="#A78BFA" style={styles.backIcon} />
-            <Text style={styles.backToLoginText}>Back to Log In Page</Text>
+            <Icon name="arrow-back" size={20} color="#9C27B0" style={styles.backIcon} />
+            <Text style={styles.backToLoginText}>Back to Login</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -102,70 +97,67 @@ const ForgetPasswordScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    marginTop: Platform.OS === 'ios' ? 50 : 20,
-    width: '100%',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: 20,
   },
   headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 20,
+    color: '#fff',
     fontWeight: 'bold',
   },
-  headerPlaceholder: {
-    width: 24, // Để cân bằng layout với nút quay lại
-  },
   form: {
-    width: '100%',
-    marginTop: 40,
+    flex: 1,
+    paddingTop: 20,
   },
   description: {
-    color: '#FFFFFF',
+    color: 'rgba(255,255,255,0.7)',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 30,
+    lineHeight: 24,
   },
-  inputContainer: {
+  inputLabel: {
+    color: '#fff',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  inputWrapper: {
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#673AB7',
+    borderRadius: 25,
+    height: 45,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    color: '#FFFFFF',
+    flex: 1,
+    color: '#fff',
+    paddingHorizontal: 20,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#A78BFA',
-  },
-  errorText: {
-    color: '#FF4444',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
   },
   resetButton: {
-    paddingVertical: 15,
+    height: 45,
     borderRadius: 25,
+    overflow: 'hidden',
+    marginTop: 20,
+  },
+  gradient: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   resetButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -173,13 +165,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 30,
   },
   backIcon: {
-    marginRight: 5,
+    marginRight: 8,
   },
   backToLoginText: {
-    color: '#A78BFA',
+    color: '#9C27B0',
     fontSize: 14,
     fontWeight: 'bold',
   },

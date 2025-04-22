@@ -25,65 +25,39 @@ const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState({});
 
-  /**
-   * Validate form đăng ký
-   * @returns {boolean} true nếu form hợp lệ, false nếu không
-   */
-  const validate = () => {
-    let tempErrors = {};
-    if (!fullName) tempErrors.fullName = 'Họ tên không được để trống';
-    if (!username) tempErrors.username = 'Tên đăng nhập không được để trống';
-    if (!email) tempErrors.email = 'Email không được để trống';
-    if (!password) tempErrors.password = 'Mật khẩu không được để trống';
-    if (!confirmPassword) tempErrors.confirmPassword = 'Xác nhận mật khẩu không được để trống';
-    if (password !== confirmPassword) tempErrors.confirmPassword = 'Mật khẩu không khớp';
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  /**
-   * Xử lý đăng ký
-   * Lưu thông tin người dùng vào AsyncStorage
-   */
   const handleSignUp = async () => {
-    if (validate()) {
-      try {
-        // Tạo đối tượng người dùng mới
-        const newUser = {
-          fullName,
-          username,
-          email,
-          password,
-          createdAt: new Date().toISOString(),
-          isRemembered: false,
-          lastLogin: null,
-          profileImage: null,
-          favoriteSongs: [],
-          playlists: [],
-        };
+    if (!fullName || !username || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
 
-        // Lưu thông tin người dùng
-        await saveUserData(newUser);
-
-        // Hiển thị thông báo thành công
-        Alert.alert(
-          'Thành công',
-          'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('Login'),
-            },
-          ]
-        );
-      } catch (error) {
-        console.error('Error saving user data:', error);
-        Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi đăng ký. Vui lòng thử lại.');
-      }
-    } else {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
+    try {
+      const newUser = {
+        fullName,
+        username,
+        email,
+        password,
+        createdAt: new Date().toISOString(),
+      };
+      await saveUserData(newUser);
+      Alert.alert(
+        'Success',
+        'Account created successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login')
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create account');
     }
   };
 
@@ -92,81 +66,89 @@ const SignUpScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
+      <LinearGradient 
+        colors={['#1E0A3C', '#000000']} 
+        style={styles.content}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      >
+        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
+            <Icon name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Sign Up</Text>
-          <View style={styles.headerPlaceholder} />
+          <View style={{ width: 24 }} />
         </View>
 
+        {/* Form */}
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Full Name</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Full Name"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Your full name"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={fullName}
               onChangeText={setFullName}
               style={styles.input}
-              autoCapitalize="words"
             />
-            {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
           </View>
 
-          <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Username</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Username"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Your username"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={username}
               onChangeText={setUsername}
               style={styles.input}
               autoCapitalize="none"
             />
-            {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
           </View>
 
-          <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Email</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Email"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Your email"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={email}
               onChangeText={setEmail}
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
 
-          <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Password</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Password"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Your password"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={password}
               onChangeText={setPassword}
               style={styles.input}
               secureTextEntry
             />
-            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
-          <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Confirm Password</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Confirm Password"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Your confirm password"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               style={styles.input}
               secureTextEntry
             />
-            {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
           </View>
 
-          <TouchableOpacity onPress={handleSignUp}>
+          <TouchableOpacity onPress={handleSignUp} style={styles.signUpButton}>
             <LinearGradient
-              colors={['#A78BFA', '#6A5ACD']}
-              style={styles.signUpButton}
+              colors={['#4C35B4', '#9C27B0']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradient}
             >
               <Text style={styles.signUpButtonText}>Sign Up</Text>
             </LinearGradient>
@@ -187,79 +169,75 @@ const SignUpScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    marginTop: Platform.OS === 'ios' ? 50 : 20,
-    width: '100%',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: 20,
   },
   headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 20,
+    color: '#fff',
     fontWeight: 'bold',
   },
-  headerPlaceholder: {
-    width: 24, // Để cân bằng layout với nút quay lại
-  },
   form: {
-    width: '100%',
-    marginTop: 40,
+    flex: 1,
+    paddingTop: 20,
   },
-  inputContainer: {
+  inputLabel: {
+    color: '#fff',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  inputWrapper: {
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#673AB7',
+    borderRadius: 25,
+    height: 45,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    color: '#FFFFFF',
+    flex: 1,
+    color: '#fff',
+    paddingHorizontal: 20,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#A78BFA',
-  },
-  errorText: {
-    color: '#FF4444',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
   },
   signUpButton: {
-    paddingVertical: 15,
+    height: 45,
     borderRadius: 25,
-    alignItems: 'center',
+    overflow: 'hidden',
     marginTop: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+  },
+  gradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   signUpButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginTop: 20,
   },
   loginText: {
-    color: '#FFFFFF',
+    color: 'rgba(255,255,255,0.5)',
     fontSize: 14,
   },
   loginLink: {
-    color: '#A78BFA',
+    color: '#9C27B0',
     fontSize: 14,
     fontWeight: 'bold',
   },

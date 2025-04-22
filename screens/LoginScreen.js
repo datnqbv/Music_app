@@ -1,90 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   TextInput,
-  Dimensions,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { saveUserData, getUserData } from '../data/storage';
-
-const { width } = Dimensions.get('window');
+import { getUserData } from '../data/storage';
 
 /**
  * LoginScreen component - Màn hình đăng nhập
- * Xử lý việc đăng nhập và lưu trữ thông tin người dùng
+ * Chỉ sử dụng thông tin đăng nhập đã được lưu khi đăng ký
  */
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isRemembered, setIsRemembered] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // Kiểm tra thông tin đăng nhập đã lưu
-  useEffect(() => {
-    const checkSavedLogin = async () => {
-      const savedUserData = await getUserData();
-      if (savedUserData && savedUserData.isRemembered) {
-        setUsername(savedUserData.username);
-        setPassword(savedUserData.password);
-        setIsRemembered(true);
-      }
-    };
-    checkSavedLogin();
-  }, []);
-
-  /**
-   * Validate form đăng nhập
-   * @returns {boolean} true nếu form hợp lệ, false nếu không
-   */
-  const validate = () => {
-    let tempErrors = {};
-    if (!username) tempErrors.username = 'Tên đăng nhập không được để trống';
-    if (!password) tempErrors.password = 'Mật khẩu không được để trống';
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  /**
-   * Xử lý đăng nhập
-   * Lưu thông tin người dùng nếu chọn Remember me
-   */
   const handleLogin = async () => {
-    if (validate()) {
-      // Lưu thông tin đăng nhập nếu người dùng chọn Remember me
-      if (isRemembered) {
-        await saveUserData({
-          username,
-          password,
-          isRemembered,
-          lastLogin: new Date().toISOString(),
-        });
-      }
+    const savedUserData = await getUserData();
+    if (savedUserData && 
+        savedUserData.username === username && 
+        savedUserData.password === password) {
       navigation.navigate('Main', { screen: 'Home' });
     } else {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
+      Alert.alert('Error', 'Invalid username or password');
     }
-  };
-
-  /**
-   * Xử lý đăng xuất
-   * Reset navigation stack về màn hình Onboarding
-   */
-  const handleLogout = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Onboarding' }],
-    });
   };
 
   return (
@@ -92,93 +41,100 @@ const LoginScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <LinearGradient colors={['#1E0A3C', '#000000']} style={styles.content}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleLogout}>
-            <Icon name="chevron-back-outline" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+      <LinearGradient 
+        colors={['#1E0A3C', '#000000']} 
+        style={styles.content}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      >
+        {/* Back Button */}
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Onboarding', { screen: 'Onboarding' })}
+        >
+          <Icon name="chevron-back" size={24} color="#fff" />
+        </TouchableOpacity>
 
+        {/* Logo */}
         <View style={styles.logoContainer}>
-          <Image
-            source={require('../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Text style={styles.logoText}>YOUR LOGO</Text>
         </View>
 
+        {/* Form */}
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
+          {/* Username Input */}
+          <Text style={styles.inputLabel}>Enter Username</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Enter Username"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Username"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={username}
               onChangeText={setUsername}
               style={styles.input}
-              keyboardType="email-address"
               autoCapitalize="none"
             />
-            {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
           </View>
 
-          <View style={styles.inputContainer}>
+          {/* Password Input */}
+          <Text style={styles.inputLabel}>Enter Password</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Enter Password"
-              placeholderTextColor="#B0B0B0"
+              placeholder="Password"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={password}
               onChangeText={setPassword}
               style={styles.input}
               secureTextEntry={!showPassword}
             />
-            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
-          <View style={styles.rememberContainer}>
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setIsRemembered(!isRemembered)}
+          {/* Remember Me & Forgot Password */}
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity 
+              style={styles.rememberContainer}
+              onPress={() => setRememberMe(!rememberMe)}
             >
-              <View style={[styles.checkbox, isRemembered && styles.checkboxChecked]} />
+              <View style={styles.checkbox}>
+                {rememberMe && (
+                  <Icon name="checkmark" size={12} color="#fff" />
+                )}
+              </View>
               <Text style={styles.rememberText}>Remember me</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('ForgetPassword')}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('ForgetPassword')}>
+              <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity onPress={handleLogin}>
-            <LinearGradient
-              colors={['#A78BFA', '#6A5ACD']}
-              style={styles.loginButton}
-            >
-              <Text style={styles.loginButtonText}>Login</Text>
-            </LinearGradient>
+          {/* Login Button */}
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={handleLogin}
+          >
+            <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
 
-          <View style={styles.orContainer}>
-            <View style={styles.orLine} />
-            <Text style={styles.orText}>or</Text>
-            <View style={styles.orLine} />
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.divider} />
           </View>
 
+          {/* Social Login */}
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, styles.googleButton]}>
-              <Image
-                source={require('../assets/google-icon.png')}
-                style={styles.socialIcon}
-                resizeMode="contain"
-              />
+            <TouchableOpacity style={styles.socialButton}>
+              <Icon name="logo-google" size={30} style={styles.googleIcon} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, styles.facebookButton]}>
-              <Icon name="logo-facebook" size={24} color="#fff" />
+            <TouchableOpacity style={styles.socialButton}>
+              <Icon name="logo-facebook" size={30} style={styles.facebookIcon} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, styles.twitterButton]}>
-              <Icon name="logo-twitter" size={24} color="#fff" />
+            <TouchableOpacity style={styles.socialButton}>
+              <Icon name="logo-twitter" size={30} style={styles.twitterIcon} />
             </TouchableOpacity>
           </View>
 
+          {/* Sign Up Link - Moved below social icons */}
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
@@ -194,146 +150,138 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    marginTop: Platform.OS === 'ios' ? 40 : 20,
-    width: '100%',
-  },
-  logoContainer: {
-    marginTop: 50,
-    marginBottom: 40,
-  },
-  logo: {
-    width: 150, // Điều chỉnh kích thước logo theo thiết kế
-    height: 50,
-  },
-  form: {
-    width: '100%',
-  },
-  inputContainer: {
+  backButton: {
+    marginTop: Platform.OS === 'ios' ? 50 : 30,
     marginBottom: 20,
   },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    color: '#FFFFFF',
-    fontSize: 16,
+  logoContainer: {
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  logoText: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  form: {
+    flex: 1,
+  },
+  inputLabel: {
+    color: '#fff',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  inputWrapper: {
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#A78BFA',
+    borderColor: '#673AB7',
+    borderRadius: 25,
+    height: 45,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  errorText: {
-    color: '#FF4444',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
+  input: {
+    flex: 1,
+    color: '#fff',
+    paddingHorizontal: 20,
+    fontSize: 16,
   },
-  rememberContainer: {
+  optionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
-  checkboxContainer: {
+  rememberContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#A78BFA',
-    borderRadius: 4,
-    marginRight: 10,
-  },
-  checkboxChecked: {
-    backgroundColor: '#A78BFA',
+    width: 16,
+    height: 16,
+    borderWidth: 1,
+    borderColor: '#673AB7',
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   rememberText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 14,
   },
-  forgotPasswordText: {
-    color: '#FF4D4D',
+  forgotText: {
+    color: '#673AB7',
     fontSize: 14,
   },
   loginButton: {
-    paddingVertical: 15,
+    height: 45,
+    backgroundColor: '#673AB7',
     borderRadius: 25,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   loginButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  orContainer: {
+  dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginVertical: 30,
   },
-  orLine: {
+  divider: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  orText: {
-    color: '#FFFFFF',
+  dividerText: {
+    color: 'rgba(255,255,255,0.5)',
     paddingHorizontal: 10,
     fontSize: 14,
   },
   socialContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 20,
-    marginBottom: 30,
+    gap: 30,
+    marginTop: 20,
+    marginBottom: 20,
   },
   socialButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  googleButton: {
-    backgroundColor: '#FFFFFF',
+  googleIcon: {
+    color: '#DB4437'
   },
-  facebookButton: {
-    backgroundColor: '#1877F2',
+  facebookIcon: {
+    color: '#4267B2'
   },
-  twitterButton: {
-    backgroundColor: '#1DA1F2',
-  },
-  socialIcon: {
-    width: 24,
-    height: 24,
+  twitterIcon: {
+    color: '#1DA1F2'
   },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginTop: 10,
   },
   signupText: {
-    color: '#FFFFFF',
+    color: 'rgba(255,255,255,0.5)',
     fontSize: 14,
   },
   signupLink: {
-    color: '#A78BFA',
+    color: '#9C27B0',
     fontSize: 14,
     fontWeight: 'bold',
   },

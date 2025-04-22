@@ -208,13 +208,10 @@ const LibraryScreen = ({ navigation }) => {
       key={playlist.id}
       style={[styles.playlistItem, selectedPlaylist?.id === playlist.id && styles.selectedPlaylistItem]}
       onPress={() => {
-        // Nếu click vào playlist đang được chọn, hủy chọn
         if (selectedPlaylist?.id === playlist.id) {
           setSelectedPlaylist(null);
         } else {
-          // Nếu click vào playlist khác, chọn playlist đó
           setSelectedPlaylist(playlist);
-          // Scroll xuống phần danh sách bài hát
           setTimeout(() => {
             if (scrollViewRef.current) {
               scrollViewRef.current.scrollTo({ y: 300, animated: true });
@@ -223,31 +220,21 @@ const LibraryScreen = ({ navigation }) => {
         }
       }}
     >
-      <Image
-        source={playlist.coverImage || require('../assets/images/playlist-2.jpg')}
-        style={styles.playlistImage}
-      />
-      <View style={styles.playlistInfo}>
-        <Text style={styles.playlistTitle}>{playlist.name}</Text>
-        <Text style={styles.playlistSongCount}>{playlist.songs?.length || 0} bài hát</Text>
-      </View>
-      <View style={styles.playlistActions}>
-        <TouchableOpacity
-          onPress={() => {
-            setEditingPlaylist(playlist);
-            setNewPlaylistName(playlist.name);
-            setIsModalVisible(true);
-          }}
-        >
-          <Icon name="create-outline" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleDeletePlaylist(playlist.id)}
-          style={styles.deleteButton}
-        >
-          <Icon name="trash-outline" size={20} color="#FF4444" />
-        </TouchableOpacity>
-      </View>
+      <LinearGradient
+        colors={['#9C27B0', '#673AB7']}
+        style={styles.playlistImageContainer}
+      >
+        <Image
+          source={playlist.coverImage || require('../assets/images/playlist-2.jpg')}
+          style={styles.playlistImage}
+        />
+        <View style={styles.cdHole}>
+          <View style={styles.cdHoleInner} />
+        </View>
+        <View style={styles.cdRing} />
+      </LinearGradient>
+      <Text style={styles.playlistTitle} numberOfLines={1}>{playlist.name}</Text>
+      <Text style={styles.playlistSongCount}>{playlist.songs?.length || 0} songs</Text>
     </TouchableOpacity>
   );
 
@@ -468,11 +455,12 @@ const LibraryScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Library</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerButton} onPress={handleSearchPress}>
-            <Icon name="search" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity 
+          style={styles.searchButton}
+          onPress={() => navigation.navigate('Search')}
+        >
+          <Icon name="search" size={24} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       {/* Tabs */}
@@ -497,8 +485,14 @@ const LibraryScreen = ({ navigation }) => {
                 setIsModalVisible(true);
               }}
             >
-              <Icon name="add" size={24} color="#FFFFFF" />
-              <Text style={styles.createPlaylistText}>Tạo playlist mới</Text>
+              <LinearGradient
+                colors={['#9C27B0', '#673AB7']}
+                style={styles.createPlaylistImageContainer}
+              >
+                <Icon name="add" size={40} color="#FFFFFF" />
+              </LinearGradient>
+              <Text style={styles.createPlaylistTitle}>Create New</Text>
+              <Text style={styles.createPlaylistText}>Playlist</Text>
             </TouchableOpacity>
             {playlists.map(renderPlaylistItem)}
           </View>
@@ -522,10 +516,13 @@ const LibraryScreen = ({ navigation }) => {
                 {selectedPlaylist && (
                   <TouchableOpacity 
                     style={styles.addSongButton}
-                    onPress={() => setIsAddSongModalVisible(true)}
+                    onPress={() => navigation.navigate('Home', {
+                      screen: 'HomeTab',
+                      initial: false
+                    })}
                   >
                     <Icon name="add" size={24} color="#FFFFFF" />
-                    <Text style={styles.addSongText}>Thêm bài hát</Text>
+                    <Text style={styles.addSongText}>Add songs</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity 
@@ -542,8 +539,8 @@ const LibraryScreen = ({ navigation }) => {
             </View>
             {selectedPlaylist && selectedPlaylist.songs?.length === 0 ? (
               <View style={styles.emptyPlaylist}>
-                <Text style={styles.emptyText}>Chưa có bài hát nào</Text>
-                <Text style={styles.emptySubText}>Hãy thêm bài hát vào playlist của bạn</Text>
+                <Text style={styles.emptyText}>No songs yet</Text>
+                <Text style={styles.emptySubText}>Go to Home to add songs to your playlist</Text>
               </View>
             ) : (
               <View style={[styles.songsList, isGridLayout && styles.songsGrid]}>
@@ -667,11 +664,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  headerRight: {
-    flexDirection: 'row',
-    gap: 15,
-  },
-  headerButton: {
+  searchButton: {
     padding: 5,
   },
   tabContainer: {
@@ -703,54 +696,94 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   playlistGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 15,
+    gap: 20,
   },
   createPlaylistButton: {
-    flexDirection: 'row',
+    width: (width - 70) / 3,
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    padding: 12,
+  },
+  createPlaylistImageContainer: {
+    width: (width - 70) / 3,
+    height: (width - 70) / 3,
+    borderRadius: (width - 70) / 6,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  createPlaylistText: {
+  createPlaylistTitle: {
     color: '#FFFFFF',
     fontSize: 16,
-    marginLeft: 12,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  createPlaylistText: {
+    color: '#B0B0B0',
+    fontSize: 14,
   },
   playlistItem: {
-    flexDirection: 'row',
+    width: (width - 70) / 3,
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    padding: 12,
+  },
+  playlistImageContainer: {
+    width: (width - 70) / 3,
+    height: (width - 70) / 3,
+    borderRadius: (width - 70) / 6,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 12,
+    padding: 3,
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   playlistImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    marginRight: 12,
+    width: '100%',
+    height: '100%',
+    borderRadius: (width - 70) / 6,
+    opacity: 0.85,
   },
-  playlistInfo: {
-    flex: 1,
+  cdHole: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#1E0A3C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  cdHoleInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4A148C',
+  },
+  cdRing: {
+    position: 'absolute',
+    width: '60%',
+    height: '60%',
+    borderRadius: (width - 70) / 6,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    zIndex: 1,
   },
   playlistTitle: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 4,
+    textAlign: 'center',
   },
   playlistSongCount: {
     color: '#B0B0B0',
     fontSize: 14,
+    textAlign: 'center',
   },
-  playlistActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  deleteButton: {
-    marginLeft: 8,
+  selectedPlaylistItem: {
+    opacity: 0.7,
   },
   artistGrid: {
     flexDirection: 'row',
@@ -895,30 +928,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  selectedPlaylistItem: {
-    borderColor: '#7B1FA2',
-    borderWidth: 2,
-  },
-  
   emptyPlaylist: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
   },
-  
   emptyText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  
   emptySubText: {
     color: '#B0B0B0',
     fontSize: 14,
     textAlign: 'center',
   },
-
   addSongButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -927,24 +952,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-
   addSongText: {
     color: '#FFFFFF',
     fontSize: 14,
     marginLeft: 8,
   },
-
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
-
   closeButton: {
     padding: 5,
   },
-
   songItemInModal: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -953,69 +974,57 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
   },
-
   songImageInModal: {
     width: 48,
     height: 48,
     borderRadius: 6,
     marginRight: 12,
   },
-
   songInfoInModal: {
     flex: 1,
   },
-
   songTitleInModal: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 4,
   },
-
   artistNameInModal: {
     color: '#B0B0B0',
     fontSize: 14,
   },
-
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-
   viewModeButton: {
     padding: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
   },
-
   songMainInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-
   songActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-
   playButton: {
     padding: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
   },
-
   playingSongItem: {
     borderColor: '#7B1FA2',
     borderWidth: 1,
   },
-
   playingSongText: {
     color: '#7B1FA2',
   },
-
   songDuration: {
     color: '#B0B0B0',
     fontSize: 12,

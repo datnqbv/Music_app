@@ -328,21 +328,26 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   /**
-   * Xử lý thêm/xóa bài hát yêu thích
+   * Xử lý khi người dùng nhấn nút yêu thích
    */
   const handleLikePress = async () => {
     try {
-      let newFavorites;
+      let updatedFavorites;
       if (isLiked) {
-        newFavorites = favoriteSongs.filter(song => song.id !== currentSong.id);
+        // Xóa khỏi danh sách yêu thích
+        updatedFavorites = favoriteSongs.filter(song => song.id !== currentSong.id);
       } else {
-        newFavorites = [currentSong, ...favoriteSongs];
+        // Thêm vào danh sách yêu thích
+        updatedFavorites = [...favoriteSongs, currentSong];
       }
-      await saveFavoriteSongs(newFavorites);
-      setFavoriteSongs(newFavorites);
+      
+      // Cập nhật state và lưu vào storage
+      setFavoriteSongs(updatedFavorites);
       setIsLiked(!isLiked);
+      await saveFavoriteSongs(updatedFavorites);
     } catch (error) {
-      console.error('Error updating favorites:', error);
+      console.error('Error updating favorite songs:', error);
+      Alert.alert('Lỗi', 'Không thể cập nhật trạng thái yêu thích');
     }
   };
 
@@ -443,14 +448,14 @@ const ListeningScreen = ({ navigation, route }) => {
 
         {/* Bottom Actions */}
         <View style={styles.bottomActions}>
-          <TouchableOpacity
+          <TouchableOpacity 
             style={styles.actionButton}
             onPress={handleLikePress}
           >
-            <Icon
-              name={isLiked ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isLiked ? '#9C27B0' : '#fff'}
+            <Icon 
+              name={isLiked ? "heart" : "heart-outline"} 
+              size={24} 
+              color={isLiked ? "#E91E63" : "#fff"} 
             />
           </TouchableOpacity>
           <TouchableOpacity 
@@ -567,6 +572,7 @@ const styles = StyleSheet.create({
   bottomActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
     paddingHorizontal: 40,
     marginBottom: 30,
   },
