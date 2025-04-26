@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
     marginTop: isIPhoneX ? 20 : 0,
   },
   logoContainer: {
-    width: 120,
-    height: 120,
+    width: 250,
+    height: 250,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
