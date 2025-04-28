@@ -60,6 +60,11 @@ const LibraryScreen = ({ navigation }) => {
   const [playbackPosition, setPlaybackPosition] = useState(0);
   const [playbackDuration, setPlaybackDuration] = useState(0);
 
+  // Thêm state cho modal chọn playlist
+  const [isSelectPlaylistModalVisible, setIsSelectPlaylistModalVisible] = useState(false);
+  const [selectedSongForPlaylist, setSelectedSongForPlaylist] = useState(null);
+  const [isActionModalVisible, setIsActionModalVisible] = useState(false);
+
   // Cleanup sound khi component unmount
   useEffect(() => {
     return sound
@@ -365,39 +370,8 @@ const LibraryScreen = ({ navigation }) => {
         <TouchableOpacity 
           style={styles.moreButton}
           onPress={() => {
-            Alert.alert(
-              'Tùy chọn',
-              'Chọn thao tác',
-              [
-                {
-                  text: 'Thêm vào playlist',
-                  onPress: () => {
-                    // TODO: Implement add to playlist
-                    Alert.alert('Thông báo', 'Tính năng đang được phát triển');
-                  }
-                },
-                {
-                  text: 'Xóa khỏi playlist',
-                  onPress: () => {
-                    if (selectedPlaylist) {
-                      removeSongFromPlaylist(selectedPlaylist.id, song.id);
-                      const updatedPlaylist = {
-                        ...selectedPlaylist,
-                        songs: selectedPlaylist.songs.filter(s => s.id !== song.id)
-                      };
-                      setSelectedPlaylist(updatedPlaylist);
-                      setPlaylists(playlists.map(p => 
-                        p.id === selectedPlaylist.id ? updatedPlaylist : p
-                      ));
-                    }
-                  }
-                },
-                {
-                  text: 'Hủy',
-                  style: 'cancel'
-                }
-              ]
-            );
+            setSelectedSongForPlaylist(song);
+            setIsActionModalVisible(true);
           }}
         >
           <Icon name="ellipsis-vertical" size={20} color="#B0B0B0" />
@@ -418,35 +392,70 @@ const LibraryScreen = ({ navigation }) => {
    * Xử lý thêm bài hát vào playlist
    * @param {Object} song - Bài hát cần thêm
    */
-  const handleAddSongToPlaylist = async (song) => {
+  const handleAddToPlaylist = async (playlistId) => {
     try {
-      if (selectedPlaylist) {
-        // Kiểm tra xem bài hát đã có trong playlist chưa
-        const songExists = selectedPlaylist.songs?.some(s => s.id === song.id);
-        if (songExists) {
-          Alert.alert('Thông báo', 'Bài hát đã có trong playlist');
-          return;
-        }
+      if (!selectedSongForPlaylist) return;
 
-        // Thêm bài hát vào playlist
-        await addSongToPlaylist(selectedPlaylist.id, song);
-        
-        // Cập nhật state
-        const updatedPlaylist = {
-          ...selectedPlaylist,
-          songs: [...(selectedPlaylist.songs || []), song]
-        };
-        setSelectedPlaylist(updatedPlaylist);
-        setPlaylists(playlists.map(p => 
-          p.id === selectedPlaylist.id ? updatedPlaylist : p
-        ));
-
-        // Đóng modal
-        setIsAddSongModalVisible(false);
+      // Kiểm tra xem bài hát đã có trong playlist chưa
+      const playlist = playlists.find(p => p.id === playlistId);
+      const songExists = playlist.songs?.some(s => s.id === selectedSongForPlaylist.id);
+      
+      if (songExists) {
+        Alert.alert('Thông báo', 'Bài hát đã có trong playlist này');
+        return;
       }
+
+      // Thêm bài hát vào playlist
+      await addSongToPlaylist(playlistId, selectedSongForPlaylist);
+      
+      // Cập nhật state
+      const updatedPlaylist = {
+        ...playlist,
+        songs: [...(playlist.songs || []), selectedSongForPlaylist]
+      };
+      
+      setPlaylists(playlists.map(p => 
+        p.id === playlistId ? updatedPlaylist : p
+      ));
+
+      // Nếu đang xem playlist được chọn, cập nhật selectedPlaylist
+      if (selectedPlaylist?.id === playlistId) {
+        setSelectedPlaylist(updatedPlaylist);
+      }
+
+      // Đóng modal
+      setIsSelectPlaylistModalVisible(false);
+      setSelectedSongForPlaylist(null);
+      
+      Alert.alert('Thành công', 'Đã thêm bài hát vào playlist');
     } catch (error) {
       console.error('Error adding song to playlist:', error);
       Alert.alert('Lỗi', 'Không thể thêm bài hát vào playlist');
+    }
+  };
+
+  // Thêm hàm xử lý xóa bài hát khỏi playlist
+  const handleRemoveFromPlaylist = async (songId) => {
+    try {
+      if (!selectedPlaylist) return;
+
+      await removeSongFromPlaylist(selectedPlaylist.id, songId);
+      
+      const updatedPlaylist = {
+        ...selectedPlaylist,
+        songs: selectedPlaylist.songs.filter(s => s.id !== songId)
+      };
+      
+      setSelectedPlaylist(updatedPlaylist);
+      setPlaylists(playlists.map(p => 
+        p.id === selectedPlaylist.id ? updatedPlaylist : p
+      ));
+      
+      setIsActionModalVisible(false);
+      Alert.alert('Thành công', 'Đã xóa bài hát khỏi playlist');
+    } catch (error) {
+      console.error('Error removing song from playlist:', error);
+      Alert.alert('Lỗi', 'Không thể xóa bài hát khỏi playlist');
     }
   };
 
@@ -466,7 +475,6 @@ const LibraryScreen = ({ navigation }) => {
       {/* Tabs */}
       <View style={styles.tabContainer}>
         {renderTab('Playlist', 'list')}
-        {renderTab('Album', 'albums')}
         {renderTab('Artist', 'person')}
       </View>
 
@@ -621,7 +629,7 @@ const LibraryScreen = ({ navigation }) => {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.songItemInModal}
-                  onPress={() => handleAddSongToPlaylist(item)}
+                  onPress={() => handleAddToPlaylist(item.id)}
                 >
                   <Image
                     source={item.image}
@@ -639,6 +647,134 @@ const LibraryScreen = ({ navigation }) => {
                 </TouchableOpacity>
               )}
               style={styles.songsList}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal chọn hành động */}
+      <Modal
+        visible={isActionModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setIsActionModalVisible(false);
+          setSelectedSongForPlaylist(null);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalContent, { width: '80%', maxHeight: '40%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Tùy chọn</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setIsActionModalVisible(false);
+                  setSelectedSongForPlaylist(null);
+                }}
+                style={styles.closeButton}
+              >
+                <Icon name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  setIsActionModalVisible(false);
+                  setIsSelectPlaylistModalVisible(true);
+                }}
+              >
+                <Icon name="add-circle-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>Thêm vào playlist</Text>
+              </TouchableOpacity>
+
+              {selectedPlaylist && (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => {
+                    Alert.alert(
+                      'Xác nhận',
+                      'Bạn có chắc chắn muốn xóa bài hát này khỏi playlist?',
+                      [
+                        {
+                          text: 'Hủy',
+                          style: 'cancel',
+                          onPress: () => setIsActionModalVisible(false)
+                        },
+                        {
+                          text: 'Xóa',
+                          style: 'destructive',
+                          onPress: () => handleRemoveFromPlaylist(selectedSongForPlaylist.id)
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <Icon name="trash-outline" size={24} color="#FF5252" />
+                  <Text style={[styles.actionButtonText, { color: '#FF5252' }]}>
+                    Xóa khỏi playlist
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal chọn playlist */}
+      <Modal
+        visible={isSelectPlaylistModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setIsSelectPlaylistModalVisible(false);
+          setSelectedSongForPlaylist(null);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalContent, { height: '60%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Chọn playlist</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setIsSelectPlaylistModalVisible(false);
+                  setSelectedSongForPlaylist(null);
+                }}
+                style={styles.closeButton}
+              >
+                <Icon name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={playlists}
+              keyExtractor={item => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.playlistItemInModal}
+                  onPress={() => handleAddToPlaylist(item.id)}
+                >
+                  <LinearGradient
+                    colors={['#9C27B0', '#673AB7']}
+                    style={styles.playlistImageContainerInModal}
+                  >
+                    <Image
+                      source={item.coverImage || require('../assets/images/playlist-2.jpg')}
+                      style={styles.playlistImageInModal}
+                    />
+                  </LinearGradient>
+                  <View style={styles.playlistInfoInModal}>
+                    <Text style={styles.playlistTitleInModal} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <Text style={styles.playlistSongCountInModal}>
+                      {item.songs?.length || 0} bài hát
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              style={styles.playlistsList}
             />
           </View>
         </View>
@@ -1029,6 +1165,59 @@ const styles = StyleSheet.create({
     color: '#B0B0B0',
     fontSize: 12,
     marginTop: 4,
+  },
+  playlistItemInModal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  playlistImageContainerInModal: {
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    marginRight: 12,
+    padding: 3,
+  },
+  playlistImageInModal: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 3,
+  },
+  playlistInfoInModal: {
+    flex: 1,
+  },
+  playlistTitleInModal: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  playlistSongCountInModal: {
+    color: '#B0B0B0',
+    fontSize: 14,
+  },
+  playlistsList: {
+    flex: 1,
+  },
+  actionButtons: {
+    padding: 16,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    marginLeft: 12,
   },
 });
 

@@ -57,7 +57,7 @@ const LoginScreen = () => {
 
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>YOUR LOGO</Text>
+          <Text style={styles.logoText}>Login</Text>
         </View>
 
         {/* Form */}

@@ -219,6 +219,10 @@ const ListeningScreen = ({ navigation, route }) => {
         if (isLooping) {
           sound.replayAsync();
         } else {
+          // Tắt bài cũ trước khi chuyển bài mới
+          if (sound && isSoundLoaded) {
+            sound.stopAsync();
+          }
           playNextSong();
         }
       }
@@ -250,14 +254,12 @@ const ListeningScreen = ({ navigation, route }) => {
   };
 
   const playNextSong = async () => {
-    if (sound && isSoundLoaded) {
-      await sound.stopAsync();
-      setIsPlaying(false);
-    }
+    // Tìm bài hát tiếp theo
     const currentIndex = songs.findIndex(s => s.id === currentSong.id);
     const nextIndex = (currentIndex + 1) % songs.length;
+    
+    // Cập nhật bài hát mới và tự động phát
     setCurrentSong(songs[nextIndex]);
-    // Set shouldAutoPlay to true when changing songs
     route.params = {
       ...route.params,
       shouldAutoPlay: true
