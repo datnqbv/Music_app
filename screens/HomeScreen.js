@@ -23,6 +23,7 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const [profileName, setProfileName] = React.useState('Đạt Sieucute');
   const [avatar, setAvatar] = React.useState(null);
+  const [currentUser, setCurrentUser] = React.useState('');
 
   const newReleaseIds = ['1', '2', '5'];
   const popularVideoIds = ['3', '4', '6'];
@@ -51,9 +52,11 @@ const HomeScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       (async () => {
-        const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
+        const username = await AsyncStorage.getItem('CURRENT_USER');
+        setCurrentUser(username);
+        const savedName = await AsyncStorage.getItem(`PROFILE_NAME_${username}`);
         if (savedName) setProfileName(savedName);
-        const savedAvatar = await AsyncStorage.getItem(PROFILE_AVATAR_KEY);
+        const savedAvatar = await AsyncStorage.getItem(`PROFILE_AVATAR_${username}`);
         if (savedAvatar) setAvatar(savedAvatar);
       })();
     }, [])
@@ -137,7 +140,7 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={styles.releaseItem}
             key={item.id}
-            onPress={() => navigation.navigate('Listening', { song: item })}
+            onPress={() => navigation.navigate('Listening', { song: item, shouldAutoPlay: true })}
           >
             <Image
               source={item.image}
@@ -157,7 +160,7 @@ const HomeScreen = () => {
           <TouchableOpacity 
             style={styles.videoItem} 
             key={item.id}
-            onPress={() => navigation.navigate('Listening', { song: item })}
+            onPress={() => navigation.navigate('Listening', { song: item, shouldAutoPlay: true })}
           >
             <View style={styles.videoCard}>
               <Image
@@ -183,7 +186,7 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={styles.videoItem} 
             key={item.id}
-            onPress={() => navigation.navigate('Listening', { song: item })}
+            onPress={() => navigation.navigate('Listening', { song: item, shouldAutoPlay: true })}
           >
             <View style={styles.videoCard}>
               <Image
@@ -230,7 +233,7 @@ const HomeScreen = () => {
           <TouchableOpacity 
             style={styles.albumItem} 
             key={item.id}
-            onPress={() => navigation.navigate('Listening', { song: item })}
+            onPress={() => navigation.navigate('Listening', { song: item, shouldAutoPlay: true })}
           >
             <Image
               source={item.image}

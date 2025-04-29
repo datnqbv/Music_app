@@ -20,20 +20,25 @@ const EditProfileScreen = () => {
   const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
 
   const [avatar, setAvatar] = useState(null);
+  const [currentUser, setCurrentUser] = useState('');
 
   useEffect(() => {
     (async () => {
-      const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
-      const savedEmail = await AsyncStorage.getItem(PROFILE_EMAIL_KEY);
-      const savedPhone = await AsyncStorage.getItem(PROFILE_PHONE_KEY);
-      const savedAvatar = await AsyncStorage.getItem(PROFILE_AVATAR_KEY);
-      setProfileData(data => ({
-        ...data,
-        name: savedName || data.name,
-        email: savedEmail || data.email,
-        phone: savedPhone || data.phone,
-      }));
-      if (savedAvatar) setAvatar(savedAvatar);
+      const username = await AsyncStorage.getItem('CURRENT_USER');
+      setCurrentUser(username);
+      if (username) {
+        const savedName = await AsyncStorage.getItem(`PROFILE_NAME_${username}`);
+        const savedEmail = await AsyncStorage.getItem(`PROFILE_EMAIL_${username}`);
+        const savedPhone = await AsyncStorage.getItem(`PROFILE_PHONE_${username}`);
+        const savedAvatar = await AsyncStorage.getItem(`PROFILE_AVATAR_${username}`);
+        setProfileData(data => ({
+          ...data,
+          name: savedName !== null ? savedName : data.name,
+          email: savedEmail !== null ? savedEmail : data.email,
+          phone: savedPhone !== null ? savedPhone : data.phone,
+        }));
+        if (savedAvatar) setAvatar(savedAvatar);
+      }
     })();
   }, []);
 
@@ -76,11 +81,23 @@ const EditProfileScreen = () => {
   };
 
   const handleSave = async () => {
-    await AsyncStorage.setItem(PROFILE_NAME_KEY, profileData.name);
-    await AsyncStorage.setItem(PROFILE_EMAIL_KEY, profileData.email);
-    await AsyncStorage.setItem(PROFILE_PHONE_KEY, profileData.phone);
-    if (avatar) await AsyncStorage.setItem(PROFILE_AVATAR_KEY, avatar);
-    navigation.goBack();
+    console.log('currentUser:', currentUser);
+    console.log('profileData:', profileData);
+    try {
+      if (!currentUser) {
+        Alert.alert('Lỗi', 'Không xác định được tài khoản hiện tại!');
+        return;
+      }
+      await AsyncStorage.setItem(`PROFILE_NAME_${currentUser}`, profileData.name);
+      await AsyncStorage.setItem(`PROFILE_EMAIL_${currentUser}`, profileData.email);
+      await AsyncStorage.setItem(`PROFILE_PHONE_${currentUser}`, profileData.phone);
+      if (avatar) await AsyncStorage.setItem(`PROFILE_AVATAR_${currentUser}`, avatar);
+      Alert.alert('Thành công', 'Đã lưu thông tin cá nhân!');
+      navigation.goBack();
+    } catch (e) {
+      Alert.alert('Lỗi', 'Không thể lưu thông tin cá nhân!');
+      console.log('Save profile error:', e);
+    }
   };
 
   return (

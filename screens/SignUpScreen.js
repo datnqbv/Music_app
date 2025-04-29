@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { saveUserData } from '../data/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * SignUpScreen component - Màn hình đăng ký
@@ -46,6 +47,10 @@ const SignUpScreen = () => {
         createdAt: new Date().toISOString(),
       };
       await saveUserData(newUser);
+      // Lưu thông tin profile cho tài khoản mới
+      await AsyncStorage.setItem(`PROFILE_NAME_${username}`, fullName);
+      await AsyncStorage.setItem(`PROFILE_EMAIL_${username}`, email);
+      await AsyncStorage.setItem(`PROFILE_PHONE_${username}`, '');
       Alert.alert(
         'Success',
         'Account created successfully!',

@@ -130,13 +130,6 @@ const ListeningScreen = ({ navigation, route }) => {
     return () => clearInterval(interval);
   }, [sound, isPlaying, isSoundLoaded]);
 
-  // Tự động phát nhạc nếu shouldAutoPlay được bật
-  useEffect(() => {
-    if (shouldAutoPlay && currentSong && sound && isSoundLoaded) {
-      playSound();
-    }
-  }, [currentSong, shouldAutoPlay, sound, isSoundLoaded]);
-
   // Cập nhật bài hát hiện tại khi initialSong thay đổi
   useEffect(() => {
     if (initialSong) {
@@ -190,7 +183,7 @@ const ListeningScreen = ({ navigation, route }) => {
       const { sound: newSound } = await Audio.Sound.createAsync(
         currentSong.audio,
         {
-          shouldPlay: false,
+          shouldPlay: shouldAutoPlay,
           progressUpdateIntervalMillis: 1000,
           positionMillis: 0,
           volume: 1.0,
@@ -205,7 +198,7 @@ const ListeningScreen = ({ navigation, route }) => {
       console.log('Audio loaded with status:', status);
       setDuration(status.durationMillis / 1000);
       setPosition(0);
-      setIsPlaying(false);
+      setIsPlaying(shouldAutoPlay);
     } catch (error) {
       console.error('Error loading audio:', error);
       Alert.alert('Error', 'Could not load audio file. Please check if the audio file exists in assets/audio folder.');
@@ -279,13 +272,6 @@ const ListeningScreen = ({ navigation, route }) => {
       ...route.params,
       shouldAutoPlay: true
     };
-  };
-
-  const playSound = async () => {
-    if (sound && isSoundLoaded) {
-      await sound.playAsync();
-      setIsPlaying(true);
-    }
   };
 
   const handleQueuePress = () => {

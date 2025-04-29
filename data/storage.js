@@ -16,7 +16,13 @@ export const STORAGE_KEYS = {
  */
 export const saveUserData = async (userData) => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+    const usersStr = await AsyncStorage.getItem('USER_LIST');
+    let users = usersStr ? JSON.parse(usersStr) : [];
+    // Không thêm trùng username
+    if (!users.find(u => u.username === userData.username)) {
+      users.push(userData);
+      await AsyncStorage.setItem('USER_LIST', JSON.stringify(users));
+    }
   } catch (error) {
     console.error('Error saving user data:', error);
   }
@@ -26,12 +32,12 @@ export const saveUserData = async (userData) => {
  * Hàm lấy thông tin người dùng
  * @returns {Object|null} - Thông tin người dùng hoặc null nếu không có
  */
-export const getUserData = async () => {
+export const getUserData = async (username) => {
   try {
-    const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
-    return userData ? JSON.parse(userData) : null;
+    const usersStr = await AsyncStorage.getItem('USER_LIST');
+    const users = usersStr ? JSON.parse(usersStr) : [];
+    return users.find(u => u.username === username);
   } catch (error) {
-    console.error('Error getting user data:', error);
     return null;
   }
 };

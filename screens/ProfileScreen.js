@@ -18,12 +18,15 @@ const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
 const ProfileScreen = ({ navigation }) => {
   const [profileName, setProfileName] = React.useState('Đạt Sieucute');
   const [avatar, setAvatar] = React.useState(null);
+  const [currentUser, setCurrentUser] = React.useState('');
   useFocusEffect(
     React.useCallback(() => {
       (async () => {
-        const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
+        const username = await AsyncStorage.getItem('CURRENT_USER');
+        setCurrentUser(username);
+        const savedName = await AsyncStorage.getItem(`PROFILE_NAME_${username}`);
         if (savedName) setProfileName(savedName);
-        const savedAvatar = await AsyncStorage.getItem(PROFILE_AVATAR_KEY);
+        const savedAvatar = await AsyncStorage.getItem(`PROFILE_AVATAR_${username}`);
         if (savedAvatar) setAvatar(savedAvatar);
       })();
     }, [])

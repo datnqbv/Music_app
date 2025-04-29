@@ -40,7 +40,7 @@ const LoginScreen = () => {
   }, []);
 
   const handleLogin = async () => {
-    const savedUserData = await getUserData();
+    const savedUserData = await getUserData(username);
     if (
       savedUserData &&
       savedUserData.username === username &&
@@ -51,6 +51,7 @@ const LoginScreen = () => {
       } else {
         await removeRememberedLogin();
       }
+      await AsyncStorage.setItem('CURRENT_USER', username);
       navigation.navigate('Main', { screen: 'Home' });
     } else {
       Alert.alert('Error', 'Invalid username or password');
