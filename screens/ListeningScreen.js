@@ -475,11 +475,7 @@ const ListeningScreen = ({ navigation, route }) => {
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => navigation.navigate('MenuList', { 
-              song: {
-                title: currentSong.title,
-                artist: currentSong.artist,
-                image: currentSong.image
-              }
+              song: currentSong
             })}
           >
             <Icon name="ellipsis-horizontal" size={24} color="#fff" />

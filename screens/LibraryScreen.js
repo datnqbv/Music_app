@@ -24,6 +24,7 @@ import {
   addSongToPlaylist,
   removeSongFromPlaylist,
 } from '../data/storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -31,7 +32,7 @@ const { width } = Dimensions.get('window');
  * LibraryScreen component - Màn hình thư viện
  * Hiển thị và quản lý playlist, album, nghệ sĩ và bài hát gần đây
  */
-const LibraryScreen = ({ navigation }) => {
+const LibraryScreen = ({ navigation, route }) => {
   // State quản lý tab hiện tại
   const [activeTab, setActiveTab] = useState('Playlist');
   // State quản lý layout hiển thị (grid/list)
@@ -65,6 +66,21 @@ const LibraryScreen = ({ navigation }) => {
   const [selectedSongForPlaylist, setSelectedSongForPlaylist] = useState(null);
   const [isActionModalVisible, setIsActionModalVisible] = useState(false);
 
+  // Add effect to handle updatedPlaylist
+  useEffect(() => {
+    if (route.params?.updatedPlaylist) {
+      const updatedPlaylist = route.params.updatedPlaylist;
+      setPlaylists(playlists.map(p => 
+        p.id === updatedPlaylist.id ? updatedPlaylist : p
+      ));
+      
+      // If the updated playlist is currently selected, update it too
+      if (selectedPlaylist?.id === updatedPlaylist.id) {
+        setSelectedPlaylist(updatedPlaylist);
+      }
+    }
+  }, [route.params?.updatedPlaylist]);
+
   // Cleanup sound khi component unmount
   useEffect(() => {
     return sound
@@ -80,6 +96,13 @@ const LibraryScreen = ({ navigation }) => {
   useEffect(() => {
     loadPlaylists();
   }, []);
+
+  // Reload playlists mỗi khi LibraryScreen được focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPlaylists();
+    }, [])
+  );
 
   /**
    * Load danh sách playlist từ AsyncStorage
@@ -128,10 +151,7 @@ const LibraryScreen = ({ navigation }) => {
       'Xác nhận',
       'Bạn có chắc chắn muốn xóa playlist này?',
       [
-        {
-          text: 'Hủy',
-          style: 'cancel',
-        },
+        { text: 'Hủy', style: 'cancel' },
         {
           text: 'Xóa',
           style: 'destructive',
@@ -139,8 +159,8 @@ const LibraryScreen = ({ navigation }) => {
             try {
               await deletePlaylist(playlistId);
               setPlaylists(playlists.filter(p => p.id !== playlistId));
+              setSelectedPlaylist(null);
             } catch (error) {
-              console.error('Error deleting playlist:', error);
               Alert.alert('Lỗi', 'Không thể xóa playlist');
             }
           },
@@ -203,6 +223,16 @@ const LibraryScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  // Helper function to filter unique by id
+  function uniqueById(arr) {
+    const seen = new Set();
+    return arr.filter(item => {
+      if (!item?.id || seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }
+
   /**
    * Render item playlist trong danh sách
    * @param {Object} playlist - Thông tin playlist
@@ -253,7 +283,6 @@ const LibraryScreen = ({ navigation }) => {
       key={artist.id}
       style={styles.artistItem}
       onPress={() => {
-        // TODO: Implement artist detail view
         Alert.alert('Thông báo', 'Tính năng xem chi tiết nghệ sĩ đang được phát triển');
       }}
     >
@@ -465,6 +494,7 @@ const LibraryScreen = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Library</Text>
         <TouchableOpacity 
+          key="searchButton"
           style={styles.searchButton}
           onPress={() => navigation.navigate('Search')}
         >
@@ -502,14 +532,59 @@ const LibraryScreen = ({ navigation }) => {
               <Text style={styles.createPlaylistTitle}>Create New</Text>
               <Text style={styles.createPlaylistText}>Playlist</Text>
             </TouchableOpacity>
-            {playlists.map(renderPlaylistItem)}
+            {uniqueById(playlists).map(playlist => (
+              <TouchableOpacity
+                key={playlist.id}
+                style={[styles.playlistItem, selectedPlaylist?.id === playlist.id && styles.selectedPlaylistItem]}
+                onPress={() => {
+                  if (selectedPlaylist?.id === playlist.id) {
+                    setSelectedPlaylist(null);
+                  } else {
+                    setSelectedPlaylist(playlist);
+                    setTimeout(() => {
+                      if (scrollViewRef.current) {
+                        scrollViewRef.current.scrollTo({ y: 300, animated: true });
+                      }
+                    }, 100);
+                  }
+                }}
+              >
+                <LinearGradient
+                  colors={['#9C27B0', '#673AB7']}
+                  style={styles.playlistImageContainer}
+                >
+                  <Image
+                    source={playlist.coverImage || require('../assets/images/playlist-2.jpg')}
+                    style={styles.playlistImage}
+                  />
+                  <View style={styles.cdHole}>
+                    <View style={styles.cdHoleInner} />
+                  </View>
+                  <View style={styles.cdRing} />
+                </LinearGradient>
+                <Text style={styles.playlistTitle} numberOfLines={1}>{playlist.name}</Text>
+                <Text style={styles.playlistSongCount}>{playlist.songs?.length || 0} songs</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
         {/* Artists Grid */}
         {activeTab === 'Artist' && (
           <View style={styles.artistGrid}>
-            {artists.map(renderArtistItem)}
+            {uniqueById(artists).map(artist => (
+              <TouchableOpacity
+                key={artist.id}
+                style={styles.artistItem}
+                onPress={() => {
+                  Alert.alert('Thông báo', 'Tính năng xem chi tiết nghệ sĩ đang được phát triển');
+                }}
+              >
+                {artist.image && <Image source={artist.image} style={styles.artistImage} />}
+                <Text style={styles.artistItemTitle}>{artist.name}</Text>
+                <Text style={styles.artistSongs}>{artist.songs}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
@@ -517,9 +592,19 @@ const LibraryScreen = ({ navigation }) => {
         {activeTab === 'Playlist' && (
           <View style={styles.recentSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
-                {selectedPlaylist ? selectedPlaylist.name : 'Recent'}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <Text style={styles.sectionTitle}>
+                  {selectedPlaylist ? selectedPlaylist.name : 'Recent'}
+                </Text>
+                {selectedPlaylist && (
+                  <TouchableOpacity
+                    style={{ marginLeft: 12, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 16, padding: 6 }}
+                    onPress={() => handleDeletePlaylist(selectedPlaylist.id)}
+                  >
+                    <Icon name="trash" size={20} color="#FF5252" />
+                  </TouchableOpacity>
+                )}
+              </View>
               <View style={styles.headerActions}>
                 {selectedPlaylist && (
                   <TouchableOpacity 
@@ -552,9 +637,44 @@ const LibraryScreen = ({ navigation }) => {
               </View>
             ) : (
               <View style={[styles.songsList, isGridLayout && styles.songsGrid]}>
-                {(selectedPlaylist ? selectedPlaylist.songs : recentSongs).map((song, index) => 
-                  renderSongItem(song, index)
-                )}
+                {uniqueById(selectedPlaylist ? selectedPlaylist.songs : recentSongs).map((song, index) => (
+                  <TouchableOpacity
+                    key={song.id}
+                    style={isGridLayout ? styles.songItemGrid : styles.songItem}
+                    onPress={() => {
+                      navigation.navigate('Listening', {
+                        song,
+                        playlist: selectedPlaylist ? selectedPlaylist.songs : recentSongs,
+                        currentIndex: index,
+                        shouldAutoPlay: true
+                      });
+                    }}
+                  >
+                    {song.image && (
+                      <Image
+                        source={song.image}
+                        style={isGridLayout ? styles.songImageGrid : styles.songImage}
+                      />
+                    )}
+                    <View style={isGridLayout ? styles.songInfoGrid : styles.songInfo}>
+                      <Text style={styles.songTitle} numberOfLines={1}>
+                        {song.title || 'Unknown Title'}
+                      </Text>
+                      <Text style={styles.artistName} numberOfLines={1}>
+                        {song.artist || 'Unknown Artist'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={styles.moreButton}
+                      onPress={() => {
+                        setSelectedSongForPlaylist(song);
+                        setIsActionModalVisible(true);
+                      }}
+                    >
+                      <Icon name="ellipsis-vertical" size={20} color="#B0B0B0" />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ))}
               </View>
             )}
           </View>
@@ -628,6 +748,7 @@ const LibraryScreen = ({ navigation }) => {
               keyExtractor={item => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
+                  key={item.id}
                   style={styles.songItemInModal}
                   onPress={() => handleAddToPlaylist(item.id)}
                 >
@@ -663,10 +784,11 @@ const LibraryScreen = ({ navigation }) => {
         }}
       >
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { width: '80%', maxHeight: '40%' }]}>
+          <View style={[styles.modalContent, { height: '40%' }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Tùy chọn</Text>
+              <Text style={styles.modalTitle}>Chọn hành động</Text>
               <TouchableOpacity 
+                key="closeActionModal"
                 onPress={() => {
                   setIsActionModalVisible(false);
                   setSelectedSongForPlaylist(null);
@@ -679,6 +801,7 @@ const LibraryScreen = ({ navigation }) => {
 
             <View style={styles.actionButtons}>
               <TouchableOpacity
+                key="addToPlaylist"
                 style={styles.actionButton}
                 onPress={() => {
                   setIsActionModalVisible(false);
@@ -691,24 +814,10 @@ const LibraryScreen = ({ navigation }) => {
 
               {selectedPlaylist && (
                 <TouchableOpacity
+                  key="removeFromPlaylist"
                   style={styles.actionButton}
                   onPress={() => {
-                    Alert.alert(
-                      'Xác nhận',
-                      'Bạn có chắc chắn muốn xóa bài hát này khỏi playlist?',
-                      [
-                        {
-                          text: 'Hủy',
-                          style: 'cancel',
-                          onPress: () => setIsActionModalVisible(false)
-                        },
-                        {
-                          text: 'Xóa',
-                          style: 'destructive',
-                          onPress: () => handleRemoveFromPlaylist(selectedSongForPlaylist.id)
-                        }
-                      ]
-                    );
+                    handleRemoveFromPlaylist(selectedSongForPlaylist.id);
                   }}
                 >
                   <Icon name="trash-outline" size={24} color="#FF5252" />
@@ -752,6 +861,7 @@ const LibraryScreen = ({ navigation }) => {
               keyExtractor={item => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
+                  key={item.id}
                   style={styles.playlistItemInModal}
                   onPress={() => handleAddToPlaylist(item.id)}
                 >

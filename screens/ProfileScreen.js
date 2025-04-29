@@ -8,10 +8,23 @@ import {
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const PROFILE_NAME_KEY = 'PROFILE_NAME';
 
 const ProfileScreen = ({ navigation }) => {
+  const [profileName, setProfileName] = React.useState('Đạt Sieucute');
+  useFocusEffect(
+    React.useCallback(() => {
+      (async () => {
+        const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
+        if (savedName) setProfileName(savedName);
+      })();
+    }, [])
+  );
+
   const menuItems = [
     {
       id: 'edit',
@@ -89,7 +102,7 @@ const ProfileScreen = ({ navigation }) => {
             source={require('../assets/mona.png')}
             style={styles.profilePicture}
           />
-          <Text style={styles.profileName}>Đạt Sieucute </Text>
+          <Text style={styles.profileName}>{profileName}</Text>
           <Text style={styles.profileUsername}>@Datsieucute</Text>
         </View>
 

@@ -10,26 +10,50 @@ import {
   TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { songs } from '../data/songs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
+const PROFILE_NAME_KEY = 'PROFILE_NAME';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const [profileName, setProfileName] = React.useState('Đạt Sieucute');
 
-  // Sections data with real songs
-  const newReleases = songs.slice(0, 3);
-  const popularVideos = songs.slice(1, 4);
-  const trendsVideos = songs.slice(2, 5);
-  const popularArtists = songs.map(song => ({
+  const newReleaseIds = ['1', '2', '5'];
+  const popularVideoIds = ['3', '4', '6'];
+  const trendsVideoIds = ['2', '8', '9'];
+  const popularAlbumIds = ['2', '4', '5'];
+
+  const newReleases = songs.filter(song => newReleaseIds.includes(song.id));
+  const popularVideos = songs.filter(song => popularVideoIds.includes(song.id));
+  const trendsVideos = songs.filter(song => trendsVideoIds.includes(song.id));
+  const popularAlbums = songs.filter(song => popularAlbumIds.includes(song.id));
+  // Lấy danh sách nghệ sĩ duy nhất
+  const artistMap = {};
+  const popularArtists = songs.filter(song => {
+    if (!artistMap[song.artist]) {
+      artistMap[song.artist] = true;
+      return true;
+    }
+    return false;
+  }).map(song => ({
     id: song.id,
     name: song.artist,
-    songs: '10 songs',
+    songs: songs.filter(s => s.artist === song.artist).length + ' songs',
     image: song.image,
   }));
-  const popularAlbums = songs.slice(0, 3);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      (async () => {
+        const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
+        if (savedName) setProfileName(savedName);
+      })();
+    }, [])
+  );
 
   const renderSection = (title, items, renderItem, type) => (
     <View style={styles.section}>
@@ -98,7 +122,7 @@ const HomeScreen = () => {
               />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Đạt<Text style={styles.profileNameBold}> Sieucute</Text></Text>
+              <Text style={styles.profileName}>{profileName}</Text>
               <Text style={styles.profileDescription}>Khai phá âm lượng</Text>
             </View>
           </TouchableOpacity>

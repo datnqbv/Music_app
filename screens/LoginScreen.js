@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getUserData } from '../data/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * LoginScreen component - Màn hình đăng nhập
@@ -24,15 +25,63 @@ const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const REMEMBERED_LOGIN_KEY = 'REMEMBERED_LOGIN';
+
+  useEffect(() => {
+    // Tự động điền thông tin nếu đã lưu
+    (async () => {
+      const remembered = await getRememberedLogin();
+      if (remembered) {
+        setUsername(remembered.username);
+        setPassword(remembered.password);
+        setRememberMe(true);
+      }
+    })();
+  }, []);
 
   const handleLogin = async () => {
     const savedUserData = await getUserData();
-    if (savedUserData && 
-        savedUserData.username === username && 
-        savedUserData.password === password) {
+    if (
+      savedUserData &&
+      savedUserData.username === username &&
+      savedUserData.password === password
+    ) {
+      if (rememberMe) {
+        await saveRememberedLogin(username, password);
+      } else {
+        await removeRememberedLogin();
+      }
       navigation.navigate('Main', { screen: 'Home' });
     } else {
       Alert.alert('Error', 'Invalid username or password');
+    }
+  };
+
+  // Lưu thông tin đăng nhập nếu chọn Remember Me
+  const saveRememberedLogin = async (username, password) => {
+    try {
+      await AsyncStorage.setItem(REMEMBERED_LOGIN_KEY, JSON.stringify({ username, password }));
+    } catch (e) {
+      // Xử lý lỗi nếu cần
+    }
+  };
+
+  // Xóa thông tin đăng nhập đã lưu
+  const removeRememberedLogin = async () => {
+    try {
+      await AsyncStorage.removeItem(REMEMBERED_LOGIN_KEY);
+    } catch (e) {
+      // Xử lý lỗi nếu cần
+    }
+  };
+
+  // Lấy thông tin đăng nhập đã lưu
+  const getRememberedLogin = async () => {
+    try {
+      const data = await AsyncStorage.getItem(REMEMBERED_LOGIN_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
     }
   };
 

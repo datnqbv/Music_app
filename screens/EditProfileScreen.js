@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
@@ -11,6 +12,24 @@ const EditProfileScreen = () => {
     phone: '+84 123 456 789',
     password: '••••••••',
   });
+
+  const PROFILE_NAME_KEY = 'PROFILE_NAME';
+  const PROFILE_EMAIL_KEY = 'PROFILE_EMAIL';
+  const PROFILE_PHONE_KEY = 'PROFILE_PHONE';
+
+  useEffect(() => {
+    (async () => {
+      const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
+      const savedEmail = await AsyncStorage.getItem(PROFILE_EMAIL_KEY);
+      const savedPhone = await AsyncStorage.getItem(PROFILE_PHONE_KEY);
+      setProfileData(data => ({
+        ...data,
+        name: savedName || data.name,
+        email: savedEmail || data.email,
+        phone: savedPhone || data.phone,
+      }));
+    })();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -37,6 +56,13 @@ const EditProfileScreen = () => {
     );
   };
 
+  const handleSave = async () => {
+    await AsyncStorage.setItem(PROFILE_NAME_KEY, profileData.name);
+    await AsyncStorage.setItem(PROFILE_EMAIL_KEY, profileData.email);
+    await AsyncStorage.setItem(PROFILE_PHONE_KEY, profileData.phone);
+    navigation.goBack();
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -45,7 +71,7 @@ const EditProfileScreen = () => {
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={handleSave}>
           <Text style={styles.saveButton}>Save</Text>
         </TouchableOpacity>
       </View>
