@@ -13,14 +13,18 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PROFILE_NAME_KEY = 'PROFILE_NAME';
+const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
 
 const ProfileScreen = ({ navigation }) => {
   const [profileName, setProfileName] = React.useState('Đạt Sieucute');
+  const [avatar, setAvatar] = React.useState(null);
   useFocusEffect(
     React.useCallback(() => {
       (async () => {
         const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
         if (savedName) setProfileName(savedName);
+        const savedAvatar = await AsyncStorage.getItem(PROFILE_AVATAR_KEY);
+        if (savedAvatar) setAvatar(savedAvatar);
       })();
     }, [])
   );
@@ -99,7 +103,7 @@ const ProfileScreen = ({ navigation }) => {
         {/* Profile Info */}
         <View style={styles.profileInfo}>
           <Image
-            source={require('../assets/mona.png')}
+            source={avatar ? { uri: avatar } : require('../assets/mona.png')}
             style={styles.profilePicture}
           />
           <Text style={styles.profileName}>{profileName}</Text>

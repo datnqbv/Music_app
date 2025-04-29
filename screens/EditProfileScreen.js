@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
@@ -16,18 +17,23 @@ const EditProfileScreen = () => {
   const PROFILE_NAME_KEY = 'PROFILE_NAME';
   const PROFILE_EMAIL_KEY = 'PROFILE_EMAIL';
   const PROFILE_PHONE_KEY = 'PROFILE_PHONE';
+  const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
+
+  const [avatar, setAvatar] = useState(null);
 
   useEffect(() => {
     (async () => {
       const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
       const savedEmail = await AsyncStorage.getItem(PROFILE_EMAIL_KEY);
       const savedPhone = await AsyncStorage.getItem(PROFILE_PHONE_KEY);
+      const savedAvatar = await AsyncStorage.getItem(PROFILE_AVATAR_KEY);
       setProfileData(data => ({
         ...data,
         name: savedName || data.name,
         email: savedEmail || data.email,
         phone: savedPhone || data.phone,
       }));
+      if (savedAvatar) setAvatar(savedAvatar);
     })();
   }, []);
 
@@ -36,14 +42,10 @@ const EditProfileScreen = () => {
       'Logout',
       'Are you sure you want to logout?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Logout',
           onPress: () => {
-            // Add logout logic here
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' }],
@@ -56,10 +58,28 @@ const EditProfileScreen = () => {
     );
   };
 
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert('Permission to access camera roll is required!');
+      return;
+    }
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
+
   const handleSave = async () => {
     await AsyncStorage.setItem(PROFILE_NAME_KEY, profileData.name);
     await AsyncStorage.setItem(PROFILE_EMAIL_KEY, profileData.email);
     await AsyncStorage.setItem(PROFILE_PHONE_KEY, profileData.phone);
+    if (avatar) await AsyncStorage.setItem(PROFILE_AVATAR_KEY, avatar);
     navigation.goBack();
   };
 
@@ -80,10 +100,10 @@ const EditProfileScreen = () => {
         {/* Profile Picture */}
         <View style={styles.profilePictureSection}>
           <Image
-            source={require('../assets/mona.png')}
+            source={avatar ? { uri: avatar } : require('../assets/mona.png')}
             style={styles.profilePicture}
           />
-          <TouchableOpacity style={styles.changePictureButton}>
+          <TouchableOpacity style={styles.changePictureButton} onPress={pickImage}>
             <Text style={styles.changePictureText}>Change Profile Picture</Text>
           </TouchableOpacity>
         </View>
@@ -96,7 +116,7 @@ const EditProfileScreen = () => {
               <TextInput
                 style={styles.input}
                 value={profileData.name}
-                onChangeText={(text) => setProfileData({...profileData, name: text})}
+                onChangeText={(text) => setProfileData({ ...profileData, name: text })}
                 placeholderTextColor="#666"
               />
             </View>
@@ -108,7 +128,7 @@ const EditProfileScreen = () => {
               <TextInput
                 style={styles.input}
                 value={profileData.email}
-                onChangeText={(text) => setProfileData({...profileData, email: text})}
+                onChangeText={(text) => setProfileData({ ...profileData, email: text })}
                 keyboardType="email-address"
                 placeholderTextColor="#666"
               />
@@ -121,7 +141,7 @@ const EditProfileScreen = () => {
               <TextInput
                 style={styles.input}
                 value={profileData.phone}
-                onChangeText={(text) => setProfileData({...profileData, phone: text})}
+                onChangeText={(text) => setProfileData({ ...profileData, phone: text })}
                 keyboardType="phone-pad"
                 placeholderTextColor="#666"
               />
@@ -134,7 +154,7 @@ const EditProfileScreen = () => {
               <TextInput
                 style={styles.input}
                 value={profileData.password}
-                onChangeText={(text) => setProfileData({...profileData, password: text})}
+                onChangeText={(text) => setProfileData({ ...profileData, password: text })}
                 secureTextEntry
                 placeholderTextColor="#666"
               />

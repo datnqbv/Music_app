@@ -17,10 +17,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 const PROFILE_NAME_KEY = 'PROFILE_NAME';
+const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [profileName, setProfileName] = React.useState('Đạt Sieucute');
+  const [avatar, setAvatar] = React.useState(null);
 
   const newReleaseIds = ['1', '2', '5'];
   const popularVideoIds = ['3', '4', '6'];
@@ -51,6 +53,8 @@ const HomeScreen = () => {
       (async () => {
         const savedName = await AsyncStorage.getItem(PROFILE_NAME_KEY);
         if (savedName) setProfileName(savedName);
+        const savedAvatar = await AsyncStorage.getItem(PROFILE_AVATAR_KEY);
+        if (savedAvatar) setAvatar(savedAvatar);
       })();
     }, [])
   );
@@ -115,8 +119,8 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Profile')}
           >
             <View style={styles.profileAvatar}>
-              <Image 
-                source={require('../assets/mona.png')}
+              <Image
+                source={avatar ? { uri: avatar } : require('../assets/mona.png')}
                 style={styles.avatarImage}
                 resizeMode="cover"
               />
