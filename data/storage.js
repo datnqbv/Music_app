@@ -16,12 +16,12 @@ export const STORAGE_KEYS = {
  */
 export const saveUserData = async (userData) => {
   try {
-    const usersStr = await AsyncStorage.getItem('USER_LIST');
-    let users = usersStr ? JSON.parse(usersStr) : [];
+    const usersStr = await AsyncStorage.getItem('USER_LIST'); // Lấy danh sách người dùng đã lưu
+    let users = usersStr ? JSON.parse(usersStr) : []; // Nếu có, chuyển đổi sang mảng, nếu không thì khởi tạo mảng rỗng
     // Không thêm trùng username
     if (!users.find(u => u.username === userData.username)) {
-      users.push(userData);
-      await AsyncStorage.setItem('USER_LIST', JSON.stringify(users));
+      users.push(userData); // Nếu không trùng, thêm người dùng vào danh sách
+      await AsyncStorage.setItem('USER_LIST', JSON.stringify(users)); // Lưu lại danh sách người dùng vào AsyncStorage
     }
   } catch (error) {
     console.error('Error saving user data:', error);
@@ -34,9 +34,9 @@ export const saveUserData = async (userData) => {
  */
 export const getUserData = async (username) => {
   try {
-    const usersStr = await AsyncStorage.getItem('USER_LIST');
-    const users = usersStr ? JSON.parse(usersStr) : [];
-    return users.find(u => u.username === username);
+    const usersStr = await AsyncStorage.getItem('USER_LIST'); // Lấy danh sách người dùng đã lưu
+    const users = usersStr ? JSON.parse(usersStr) : []; // Chuyển chuỗi JSON thành mảng
+    return users.find(u => u.username === username); // Tìm kiếm người dùng theo username
   } catch (error) {
     return null;
   }
@@ -48,7 +48,7 @@ export const getUserData = async (username) => {
  */
 export const saveFavoriteSongs = async (songs) => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEYS.FAVORITE_SONGS, JSON.stringify(songs));
+    await AsyncStorage.setItem(STORAGE_KEYS.FAVORITE_SONGS, JSON.stringify(songs)); // Lưu danh sách bài hát yêu thích vào AsyncStorage
   } catch (error) {
     console.error('Error saving favorite songs:', error);
   }
@@ -60,8 +60,8 @@ export const saveFavoriteSongs = async (songs) => {
  */
 export const getFavoriteSongs = async () => {
   try {
-    const songs = await AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_SONGS);
-    return songs ? JSON.parse(songs) : [];
+    const songs = await AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_SONGS); // Lấy danh sách bài hát yêu thích
+    return songs ? JSON.parse(songs) : []; // Nếu có, trả về danh sách bài hát, nếu không trả về mảng rỗng
   } catch (error) {
     console.error('Error getting favorite songs:', error);
     return [];
@@ -74,7 +74,7 @@ export const getFavoriteSongs = async () => {
  */
 export const saveRecentPlayed = async (songs) => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEYS.RECENT_PLAYED, JSON.stringify(songs));
+    await AsyncStorage.setItem(STORAGE_KEYS.RECENT_PLAYED, JSON.stringify(songs)); // Lưu danh sách bài hát đã nghe gần đây vào AsyncStorage
   } catch (error) {
     console.error('Error saving recent played songs:', error);
   }
@@ -86,8 +86,8 @@ export const saveRecentPlayed = async (songs) => {
  */
 export const getRecentPlayed = async () => {
   try {
-    const songs = await AsyncStorage.getItem(STORAGE_KEYS.RECENT_PLAYED);
-    return songs ? JSON.parse(songs) : [];
+    const songs = await AsyncStorage.getItem(STORAGE_KEYS.RECENT_PLAYED); // Lấy danh sách bài hát đã nghe gần đây
+    return songs ? JSON.parse(songs) : []; // Nếu có, trả về danh sách bài hát đã nghe, nếu không trả về mảng rỗng
   } catch (error) {
     console.error('Error getting recent played songs:', error);
     return [];
@@ -100,7 +100,7 @@ export const getRecentPlayed = async () => {
  */
 export const savePlaylists = async (playlists) => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists));
+    await AsyncStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists)); // Lưu danh sách playlist vào AsyncStorage
   } catch (error) {
     console.error('Error saving playlists:', error);
   }
@@ -112,8 +112,8 @@ export const savePlaylists = async (playlists) => {
  */
 export const getPlaylists = async () => {
   try {
-    const playlists = await AsyncStorage.getItem(STORAGE_KEYS.PLAYLISTS);
-    return playlists ? JSON.parse(playlists) : [];
+    const playlists = await AsyncStorage.getItem(STORAGE_KEYS.PLAYLISTS); // Lấy danh sách playlist
+    return playlists ? JSON.parse(playlists) : []; // Nếu có, trả về danh sách playlist, nếu không trả về mảng rỗng
   } catch (error) {
     console.error('Error getting playlists:', error);
     return [];
@@ -127,15 +127,15 @@ export const getPlaylists = async () => {
  */
 export const createPlaylist = async (playlistData) => {
   try {
-    const playlists = await getPlaylists();
+    const playlists = await getPlaylists(); // Lấy danh sách playlist hiện tại
     const newPlaylist = {
       id: Date.now().toString(), // Tạo ID duy nhất cho playlist
       ...playlistData,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(), // Lưu thời gian tạo playlist
     };
-    const updatedPlaylists = [...playlists, newPlaylist];
-    await savePlaylists(updatedPlaylists);
-    return newPlaylist;
+    const updatedPlaylists = [...playlists, newPlaylist]; // Thêm playlist mới vào danh sách
+    await savePlaylists(updatedPlaylists); // Lưu lại danh sách playlist đã cập nhật vào AsyncStorage
+    return newPlaylist; // Trả về playlist mới
   } catch (error) {
     console.error('Error creating playlist:', error);
     throw error;
@@ -150,12 +150,12 @@ export const createPlaylist = async (playlistData) => {
  */
 export const updatePlaylist = async (playlistId, updatedData) => {
   try {
-    const playlists = await getPlaylists();
+    const playlists = await getPlaylists(); // Lấy danh sách playlist hiện tại
     const updatedPlaylists = playlists.map(playlist => 
-      playlist.id === playlistId ? { ...playlist, ...updatedData } : playlist
+      playlist.id === playlistId ? { ...playlist, ...updatedData } : playlist // Cập nhật playlist có ID trùng
     );
-    await savePlaylists(updatedPlaylists);
-    return updatedPlaylists.find(p => p.id === playlistId);
+    await savePlaylists(updatedPlaylists); // Lưu danh sách playlist đã cập nhật vào AsyncStorage
+    return updatedPlaylists.find(p => p.id === playlistId); // Trả về playlist đã được cập nhật
   } catch (error) {
     console.error('Error updating playlist:', error);
     throw error;
@@ -168,9 +168,9 @@ export const updatePlaylist = async (playlistId, updatedData) => {
  */
 export const deletePlaylist = async (playlistId) => {
   try {
-    const playlists = await getPlaylists();
-    const updatedPlaylists = playlists.filter(playlist => playlist.id !== playlistId);
-    await savePlaylists(updatedPlaylists);
+    const playlists = await getPlaylists(); // Lấy danh sách playlist hiện tại
+    const updatedPlaylists = playlists.filter(playlist => playlist.id !== playlistId); // Lọc playlist cần xóa
+    await savePlaylists(updatedPlaylists); // Lưu lại danh sách playlist đã xóa vào AsyncStorage
   } catch (error) {
     console.error('Error deleting playlist:', error);
     throw error;
@@ -184,7 +184,7 @@ export const deletePlaylist = async (playlistId) => {
  */
 export const addSongToPlaylist = async (playlistId, song) => {
   try {
-    const playlists = await getPlaylists();
+    const playlists = await getPlaylists(); // Lấy danh sách playlist hiện tại
     const updatedPlaylists = playlists.map(playlist => {
       if (playlist.id === playlistId) {
         // Kiểm tra xem bài hát đã tồn tại trong playlist chưa
@@ -192,13 +192,13 @@ export const addSongToPlaylist = async (playlistId, song) => {
         if (!songExists) {
           return {
             ...playlist,
-            songs: [...playlist.songs, song],
+            songs: [...playlist.songs, song], // Thêm bài hát vào playlist nếu chưa có
           };
         }
       }
       return playlist;
     });
-    await savePlaylists(updatedPlaylists);
+    await savePlaylists(updatedPlaylists); // Lưu lại danh sách playlist đã cập nhật vào AsyncStorage
   } catch (error) {
     console.error('Error adding song to playlist:', error);
     throw error;
@@ -212,17 +212,17 @@ export const addSongToPlaylist = async (playlistId, song) => {
  */
 export const removeSongFromPlaylist = async (playlistId, songId) => {
   try {
-    const playlists = await getPlaylists();
+    const playlists = await getPlaylists(); // Lấy danh sách playlist hiện tại
     const updatedPlaylists = playlists.map(playlist => {
       if (playlist.id === playlistId) {
         return {
           ...playlist,
-          songs: playlist.songs.filter(song => song.id !== songId),
+          songs: playlist.songs.filter(song => song.id !== songId), // Lọc bỏ bài hát khỏi playlist
         };
       }
       return playlist;
     });
-    await savePlaylists(updatedPlaylists);
+    await savePlaylists(updatedPlaylists); // Lưu lại danh sách playlist đã cập nhật vào Async
   } catch (error) {
     console.error('Error removing song from playlist:', error);
     throw error;
@@ -236,8 +236,8 @@ export const removeSongFromPlaylist = async (playlistId, songId) => {
  */
 export const getPlaylistById = async (playlistId) => {
   try {
-    const playlists = await getPlaylists();
-    return playlists.find(playlist => playlist.id === playlistId);
+    const playlists = await getPlaylists(); // Lấy danh sách tất cả các playlist đã lưu từ AsyncStorage
+    return playlists.find(playlist => playlist.id === playlistId); // Tìm playlist có ID khớp với playlistId
   } catch (error) {
     console.error('Error getting playlist by id:', error);
     throw error;

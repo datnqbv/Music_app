@@ -26,7 +26,9 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const REMEMBERED_LOGIN_KEY = 'REMEMBERED_LOGIN';
-
+  
+  // useEffect: tự động chạy khi component được mount
+  // Nếu người dùng đã chọn Remember Me trước đó, thì tự động điền thông tin vào ô nhập
   useEffect(() => {
     // Tự động điền thông tin nếu đã lưu
     (async () => {
@@ -38,20 +40,28 @@ const LoginScreen = () => {
       }
     })();
   }, []);
-
+  
+  /**
+   * Hàm xử lý khi người dùng nhấn nút đăng nhập
+   * So sánh thông tin đăng nhập với dữ liệu đã lưu
+   * Nếu chính xác thì chuyển sang màn hình chính
+   */
   const handleLogin = async () => {
-    const savedUserData = await getUserData(username);
+    const savedUserData = await getUserData(username); // Lấy dữ liệu người dùng đã đăng ký trước đó
     if (
       savedUserData &&
       savedUserData.username === username &&
       savedUserData.password === password
     ) {
+      // Nếu người dùng chọn Remember Me, lưu lại thông tin đăng nhập
       if (rememberMe) {
         await saveRememberedLogin(username, password);
       } else {
         await removeRememberedLogin();
       }
+      // Lưu tên người dùng hiện tại vào AsyncStorage (để dùng sau này)
       await AsyncStorage.setItem('CURRENT_USER', username);
+      // Điều hướng sang màn hình chính (Main → Home)
       navigation.navigate('Main', { screen: 'Home' });
     } else {
       Alert.alert('Error', 'Invalid username or password');

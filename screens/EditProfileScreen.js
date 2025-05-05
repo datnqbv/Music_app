@@ -6,42 +6,50 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
 const EditProfileScreen = () => {
+  // Hook dùng để điều hướng giữa các màn hình
   const navigation = useNavigation();
+   // Khởi tạo state chứa thông tin hồ sơ người dùng mặc định
   const [profileData, setProfileData] = useState({
     name: 'User Name',
     email: 'user@example.com',
     phone: '+84 123 456 789',
     password: '••••••••',
   });
-
+// Các key dùng để lưu thông tin người dùng vào AsyncStorage
   const PROFILE_NAME_KEY = 'PROFILE_NAME';
   const PROFILE_EMAIL_KEY = 'PROFILE_EMAIL';
   const PROFILE_PHONE_KEY = 'PROFILE_PHONE';
   const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
-
+// State lưu avatar người dùng (URI của hình ảnh)
   const [avatar, setAvatar] = useState(null);
+  // State lưu tên người dùng hiện tại đang đăng nhập
   const [currentUser, setCurrentUser] = useState('');
-
+   // useEffect được gọi khi component vừa được render lần đầu
   useEffect(() => {
     (async () => {
+      // Lấy thông tin tên người dùng hiện tại từ AsyncStorage
       const username = await AsyncStorage.getItem('CURRENT_USER');
       setCurrentUser(username);
+       // Nếu có tên người dùng, lấy các thông tin hồ sơ tương ứng từ AsyncStorage
       if (username) {
         const savedName = await AsyncStorage.getItem(`PROFILE_NAME_${username}`);
         const savedEmail = await AsyncStorage.getItem(`PROFILE_EMAIL_${username}`);
         const savedPhone = await AsyncStorage.getItem(`PROFILE_PHONE_${username}`);
         const savedAvatar = await AsyncStorage.getItem(`PROFILE_AVATAR_${username}`);
+        // Cập nhật lại state profileData nếu có dữ liệu lưu trữ
         setProfileData(data => ({
           ...data,
           name: savedName !== null ? savedName : data.name,
           email: savedEmail !== null ? savedEmail : data.email,
           phone: savedPhone !== null ? savedPhone : data.phone,
         }));
+        // Nếu có avatar đã lưu, cập nhật state avatar
         if (savedAvatar) setAvatar(savedAvatar);
       }
     })();
-  }, []);
+  }, []); // [] nghĩa là chỉ chạy 1 lần khi component được load
 
+  // Hàm xử lý khi người dùng nhấn nút "Đăng xuất"
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -51,6 +59,7 @@ const EditProfileScreen = () => {
         {
           text: 'Logout',
           onPress: () => {
+            // Reset navigation stack và điều hướng về màn hình Login
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' }],
@@ -59,27 +68,32 @@ const EditProfileScreen = () => {
           style: 'destructive',
         },
       ],
-      { cancelable: true }
+      { cancelable: true } // Cho phép hủy bằng cách bấm ngoài hộp thoại
     );
   };
-
+  
+   // Hàm xử lý khi người dùng chọn ảnh đại diện mới
   const pickImage = async () => {
+    // Yêu cầu quyền truy cập thư viện ảnh
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       alert('Permission to access camera roll is required!');
       return;
     }
+    // Mở thư viện ảnh để chọn hình ảnh
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
+      allowsEditing: true, // Cho phép cắt ảnh
+      aspect: [1, 1], // Tỉ lệ khung hình 1:1
+      quality: 1, // Chất lượng ảnh cao nhất
     });
+     // Nếu người dùng không hủy thì lưu URI của ảnh đã chọn
     if (!result.canceled) {
       setAvatar(result.assets[0].uri);
     }
   };
 
+// Hàm xử lý khi người dùng nhấn nút "Lưu"
   const handleSave = async () => {
     console.log('currentUser:', currentUser);
     console.log('profileData:', profileData);
@@ -88,6 +102,7 @@ const EditProfileScreen = () => {
         Alert.alert('Lỗi', 'Không xác định được tài khoản hiện tại!');
         return;
       }
+      // Lưu thông tin hồ sơ người dùng vào AsyncStorage
       await AsyncStorage.setItem(`PROFILE_NAME_${currentUser}`, profileData.name);
       await AsyncStorage.setItem(`PROFILE_EMAIL_${currentUser}`, profileData.email);
       await AsyncStorage.setItem(`PROFILE_PHONE_${currentUser}`, profileData.phone);

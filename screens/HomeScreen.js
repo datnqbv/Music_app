@@ -15,7 +15,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { songs } from '../data/songs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Lấy chiều rộng màn hình để xử lý giao diện
 const { width } = Dimensions.get('window');
+// Khai báo các khóa dùng cho lưu trữ AsyncStorage
 const PROFILE_NAME_KEY = 'PROFILE_NAME';
 const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
 
@@ -23,13 +25,14 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const [profileName, setProfileName] = React.useState('Đạt Sieucute');
   const [avatar, setAvatar] = React.useState(null);
-  const [currentUser, setCurrentUser] = React.useState('');
-
+  const [currentUser, setCurrentUser] = React.useState(''); // Tên người dùng hiện tại (được lấy từ AsyncStorage)
+  
   const newReleaseIds = ['1', '2', '5'];
   const popularVideoIds = ['3', '4', '6'];
   const trendsVideoIds = ['2', '8', '9'];
   const popularAlbumIds = ['2', '4', '5'];
-
+  
+  // Lọc ra các bài hát tương ứng với từng danh mục
   const newReleases = songs.filter(song => newReleaseIds.includes(song.id));
   const popularVideos = songs.filter(song => popularVideoIds.includes(song.id));
   const trendsVideos = songs.filter(song => trendsVideoIds.includes(song.id));
@@ -39,27 +42,31 @@ const HomeScreen = () => {
   const popularArtists = songs.filter(song => {
     if (!artistMap[song.artist]) {
       artistMap[song.artist] = true;
-      return true;
+      return true; // Nếu chưa có thì giữ lại
     }
-    return false;
+    return false; // Nếu đã có thì bỏ qua
   }).map(song => ({
     id: song.id,
     name: song.artist,
     songs: songs.filter(s => s.artist === song.artist).length + ' songs',
     image: song.image,
   }));
-
+  
+  // useFocusEffect sẽ được gọi lại mỗi khi màn hình này được focus
   useFocusEffect(
     React.useCallback(() => {
       (async () => {
+        // Lấy tên người dùng hiện tại từ AsyncStorage
         const username = await AsyncStorage.getItem('CURRENT_USER');
         setCurrentUser(username);
+        // Lấy tên hiển thị đã lưu nếu có
         const savedName = await AsyncStorage.getItem(`PROFILE_NAME_${username}`);
         if (savedName) setProfileName(savedName);
+        // Lấy ảnh đại diện đã lưu nếu có
         const savedAvatar = await AsyncStorage.getItem(`PROFILE_AVATAR_${username}`);
         if (savedAvatar) setAvatar(savedAvatar);
       })();
-    }, [])
+    }, []) // Mảng dependency rỗng => chỉ gọi lại khi màn hình focus
   );
 
   const renderSection = (title, items, renderItem, type) => (

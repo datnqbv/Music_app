@@ -23,18 +23,20 @@ const { width } = Dimensions.get('window');
  * Xử lý việc phát nhạc và lưu trữ lịch sử nghe nhạc
  */
 const ListeningScreen = ({ navigation, route }) => {
+  // Lấy thông tin từ route: bài hát hiện tại, playlist, index, có tự động phát không
   const { song: initialSong, playlist = [], currentIndex = 0, shouldAutoPlay = false } = route.params || {};
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [sound, setSound] = useState(null);
-  const [position, setPosition] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentSong, setCurrentSong] = useState(initialSong);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isLooping, setIsLooping] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [isSoundLoaded, setIsSoundLoaded] = useState(false);
-  const [recentPlayed, setRecentPlayed] = useState([]);
-  const [favoriteSongs, setFavoriteSongs] = useState([]);
+  // Các state quản lý trạng thái phát nhạc
+  const [isPlaying, setIsPlaying] = useState(false); // Đang phát hay không
+  const [sound, setSound] = useState(null); // Đối tượng âm thanh
+  const [position, setPosition] = useState(0); // Vị trí phát hiện tại (giây)
+  const [duration, setDuration] = useState(0); // Tổng thời lượng bài hát (giây)
+  const [currentSong, setCurrentSong] = useState(initialSong); // Bài hát hiện tại
+  const [isLiked, setIsLiked] = useState(false); // Trạng thái yêu thích
+  const [isLooping, setIsLooping] = useState(false); // Lặp bài
+  const [isShuffle, setIsShuffle] = useState(false); // Trộn bài
+  const [isSoundLoaded, setIsSoundLoaded] = useState(false); // Âm thanh đã được load chưa
+  const [recentPlayed, setRecentPlayed] = useState([]); // Danh sách đã nghe
+  const [favoriteSongs, setFavoriteSongs] = useState([]); // Danh sách yêu thích
 
   // Load dữ liệu đã lưu khi component mount
   useEffect(() => {
@@ -52,7 +54,7 @@ const ListeningScreen = ({ navigation, route }) => {
       ]);
       setRecentPlayed(recent);
       setFavoriteSongs(favorites);
-      setIsLiked(favorites.some(song => song.id === currentSong?.id));
+      setIsLiked(favorites.some(song => song.id === currentSong?.id)); // Kiểm tra bài hát hiện tại có được yêu thích không
     } catch (error) {
       console.error('Error loading saved data:', error);
     }
@@ -63,7 +65,7 @@ const ListeningScreen = ({ navigation, route }) => {
     setupAudio();
   }, []);
 
-  // Cleanup function - only unload when really leaving the screen
+  // Xử lý dọn dẹp khi rời khỏi màn hình, trừ khi chuyển đến Queue, Comment, Share
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       // Prevent audio unloading when navigating to these screens
@@ -87,7 +89,7 @@ const ListeningScreen = ({ navigation, route }) => {
     };
   }, [sound, navigation]);
 
-  // Handle focus event to resume playing when returning
+  // Nếu quay lại màn hình, tiếp tục phát nếu đang phát
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       if (sound && isPlaying) {
@@ -100,14 +102,14 @@ const ListeningScreen = ({ navigation, route }) => {
     };
   }, [sound, isPlaying, navigation]);
 
-  // Load audio khi bài hát thay đổi
+  // Tải âm thanh mỗi khi đổi bài
   useEffect(() => {
     if (currentSong) {
       loadAudio();
     }
   }, [currentSong]);
 
-  // Cập nhật vị trí phát nhạc
+  // Cập nhật vị trí phát theo thời gian mỗi 1 giây
   useEffect(() => {
     let interval;
     if (sound && isSoundLoaded) {
@@ -118,9 +120,9 @@ const ListeningScreen = ({ navigation, route }) => {
             setPosition(status.positionMillis / 1000);
             if (status.didJustFinish) {
               if (isLooping) {
-                await sound.replayAsync();
+                await sound.replayAsync();  // Lặp lại nếu bật lặp
               } else {
-                playNextSong();
+                playNextSong(); // Chuyển bài nếu xong
               }
             }
           }
@@ -137,7 +139,8 @@ const ListeningScreen = ({ navigation, route }) => {
       saveToRecentPlayed(initialSong);
     }
   }, [initialSong]);
-
+  
+   // Cấu hình chế độ phát âm thanh cho thiết bị
   const setupAudio = async () => {
     try {
       await Audio.setAudioModeAsync({
@@ -150,8 +153,9 @@ const ListeningScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Error setting up audio:', error);
     }
-  };
-
+  }; 
+  
+  // Dọn dẹp âm thanh hiện tại
   const cleanupAudio = async () => {
     if (sound && isSoundLoaded) {
       try {
@@ -172,7 +176,8 @@ const ListeningScreen = ({ navigation, route }) => {
       console.log('No sound to clean up or sound is not loaded.');
     }
   };
-
+  
+  // Tải bài hát mới
   const loadAudio = async () => {
     try {
       // Dọn dẹp audio trước đó nếu có
@@ -204,7 +209,8 @@ const ListeningScreen = ({ navigation, route }) => {
       Alert.alert('Error', 'Could not load audio file. Please check if the audio file exists in assets/audio folder.');
     }
   };
-
+  
+  // Hàm xử lý khi trạng thái phát thay đổi
   const onPlaybackStatusUpdate = (status) => {
     if (status.isLoaded) {
       setPosition(status.positionMillis / 1000);
@@ -221,7 +227,8 @@ const ListeningScreen = ({ navigation, route }) => {
       }
     }
   };
-
+  
+  // Phát / Tạm dừng nhạc
   const playPauseSound = async () => {
     if (sound && isSoundLoaded) {
       if (isPlaying) {
@@ -232,20 +239,23 @@ const ListeningScreen = ({ navigation, route }) => {
       setIsPlaying(!isPlaying);
     }
   };
-
+  
+  // Cập nhật thời gian phát khi tua
   const updatePosition = async (pos) => {
     if (sound && isSoundLoaded) {
       await sound.setPositionAsync(pos * 1000);
       setPosition(pos);
     }
   };
-
+  
+  // Format hiển thị thời gian mm:ss
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
-
+  
+  // Phát bài tiếp theo trong playlist
   const playNextSong = async () => {
     // Tìm bài hát tiếp theo
     const currentIndex = songs.findIndex(s => s.id === currentSong.id);
@@ -258,7 +268,8 @@ const ListeningScreen = ({ navigation, route }) => {
       shouldAutoPlay: true
     };
   };
-
+  
+  // Phát bài trước
   const playPreviousSong = async () => {
     if (sound && isSoundLoaded) {
       await sound.stopAsync();
@@ -273,7 +284,8 @@ const ListeningScreen = ({ navigation, route }) => {
       shouldAutoPlay: true
     };
   };
-
+  
+  // Mở màn hình hàng đợi
   const handleQueuePress = () => {
     // Get first 5 songs for the queue
     const queuePlaylist = songs.slice(0, 5);
@@ -284,14 +296,16 @@ const ListeningScreen = ({ navigation, route }) => {
       currentSong: currentSong
     });
   };
-
+  
+  // Mở màn hình bình luận
   const handleCommentPress = () => {
     // Don't stop the music when going to comments
     navigation.navigate('Comment', {
       song: currentSong
     });
   };
-
+  
+  // Mở màn hình chia sẻ
   const handleSharePress = () => {
     // Don't stop the music when going to share
     navigation.navigate('Share', {

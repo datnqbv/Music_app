@@ -11,26 +11,28 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient'; // Dùng để tạo hiệu ứng gradient
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getFavoriteSongs, saveFavoriteSongs } from '../data/storage';
+import { getFavoriteSongs, saveFavoriteSongs } from '../data/storage';  // Các hàm xử lý lưu trữ danh sách bài hát yêu thích
 
+// Lấy chiều rộng của màn hình để xử lý layout
 const { width } = Dimensions.get('window');
 
+// Component hiển thị danh sách bài hát yêu thích
 const FavoriteScreen = ({ navigation }) => {
-  const [favoriteSongs, setFavoriteSongs] = useState([]);
+  const [favoriteSongs, setFavoriteSongs] = useState([]); // State lưu danh sách bài hát yêu thích
 
-  // Load danh sách bài hát yêu thích khi màn hình được mount
+   // Khi component được mount, gọi hàm loadFavoriteSongs để lấy dữ liệu từ storage
   useEffect(() => {
     loadFavoriteSongs();
   }, []);
 
-  // Load lại danh sách khi màn hình được focus
+   // Khi màn hình được focus (người dùng quay lại màn này), load lại danh sách bài hát yêu thích
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadFavoriteSongs();
     });
-
+    // Clean up khi component unmount
     return unsubscribe;
   }, [navigation]);
 
@@ -39,7 +41,7 @@ const FavoriteScreen = ({ navigation }) => {
    */
   const loadFavoriteSongs = async () => {
     try {
-      const songs = await getFavoriteSongs();
+      const songs = await getFavoriteSongs(); // Lấy từ storage
       setFavoriteSongs(songs);
     } catch (error) {
       console.error('Error loading favorite songs:', error);
@@ -60,7 +62,10 @@ const FavoriteScreen = ({ navigation }) => {
       Alert.alert('Error', 'Could not remove song from favorites');
     }
   };
-
+  
+  /**
+   * Xử lý khi người dùng bấm "Play All" để nghe tất cả bài hát yêu thích từ đầu
+   */
   const handlePlayAll = () => {
     if (favoriteSongs.length > 0) {
       navigation.navigate('Listening', {
@@ -71,7 +76,10 @@ const FavoriteScreen = ({ navigation }) => {
       });
     }
   };
-
+  
+  /**
+   * Xử lý khi người dùng chọn "Shuffle" để phát ngẫu nhiên
+   */
   const handleShuffle = () => {
     if (favoriteSongs.length > 0) {
       const randomIndex = Math.floor(Math.random() * favoriteSongs.length);
@@ -83,7 +91,10 @@ const FavoriteScreen = ({ navigation }) => {
       });
     }
   };
-
+  
+  /**
+   * Hàm renderSongItem dùng để hiển thị từng bài hát trong danh sách yêu thích
+   */
   const renderSongItem = (song, index) => (
     <View
       key={`favorite-song-${song.id}-${index}`}

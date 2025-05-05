@@ -37,14 +37,14 @@ const SignUpScreen = () => {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
-
+    // Lưu trữ thông tin đăng ký
     try {
       const newUser = {
         fullName,
         username,
         email,
         password,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(), // Thời gian tài khoản được tạo, được lấy từ thời điểm hiện tại và chuyển thành định dạng chuỗi chuẩn ISO.
       };
       await saveUserData(newUser);
       // Lưu thông tin profile cho tài khoản mới

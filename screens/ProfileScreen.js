@@ -12,24 +12,37 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Khai báo key để lưu tên và avatar người dùng trong AsyncStorage
 const PROFILE_NAME_KEY = 'PROFILE_NAME';
 const PROFILE_AVATAR_KEY = 'PROFILE_AVATAR';
 
+// Component màn hình hồ sơ người dùng
 const ProfileScreen = ({ navigation }) => {
+  // Trạng thái tên hồ sơ (mặc định là "Đạt Sieucute")
   const [profileName, setProfileName] = React.useState('Đạt Sieucute');
+  // Trạng thái avatar người dùng (mặc định null nếu chưa có)
   const [avatar, setAvatar] = React.useState(null);
+  // Trạng thái lưu tên người dùng hiện tại (đã đăng nhập)
   const [currentUser, setCurrentUser] = React.useState('');
+
+  /**
+   * useFocusEffect: Tương tự như useEffect, nhưng chỉ chạy lại khi màn hình này được focus (hiển thị)
+   * React.useCallback đảm bảo hàm callback không bị tạo lại mỗi lần render
+   */
   useFocusEffect(
     React.useCallback(() => {
       (async () => {
+        // Lấy tên người dùng hiện tại từ AsyncStorage
         const username = await AsyncStorage.getItem('CURRENT_USER');
         setCurrentUser(username);
+        // Lấy tên hồ sơ đã lưu cho người dùng đó (nếu có)
         const savedName = await AsyncStorage.getItem(`PROFILE_NAME_${username}`);
         if (savedName) setProfileName(savedName);
+        // Lấy avatar đã lưu cho người dùng đó (nếu có)
         const savedAvatar = await AsyncStorage.getItem(`PROFILE_AVATAR_${username}`);
         if (savedAvatar) setAvatar(savedAvatar);
       })();
-    }, [])
+    }, []) // Chỉ chạy một lần khi màn hình được focus
   );
 
   const menuItems = [

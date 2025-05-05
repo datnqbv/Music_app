@@ -15,7 +15,7 @@ import ListeningScreen from '../screens/ListeningScreen';
 import CommentScreen from '../screens/CommentScreen';
 import FavoriteScreen from '../screens/FavoriteScreen';
 import LibraryScreen from '../screens/LibraryScreen';
-import LibraryLayoutScreen from '../screens/LibraryLayoutScreen';
+// import LibraryLayoutScreen from '../screens/LibraryLayoutScreen';
 import MenuListScreen from '../screens/MenuListScreen';
 import QueueScreen from '../screens/QueueScreen';
 import MinimizeScreen from '../screens/MinimizeScreen';
@@ -89,7 +89,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Listening" component={ListeningScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Comment" component={CommentScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="LibraryLayout" component={LibraryLayoutScreen} options={{ headerShown: false }} />
+      {/* <Stack.Screen name="LibraryLayout" component={LibraryLayoutScreen} options={{ headerShown: false }} /> */}
       <Stack.Screen name="MenuList" component={MenuListScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Queue" component={QueueScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Minimize" component={MinimizeScreen} options={{ headerShown: false }} />
