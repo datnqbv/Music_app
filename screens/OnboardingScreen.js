@@ -19,7 +19,7 @@ const OnboardingScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../assets/galaxy.png')} // Hình ảnh nền
+      source={require('../assets/galaxy.webp')} // Hình ảnh nền
       style={styles.container}
       resizeMode="cover"
     >

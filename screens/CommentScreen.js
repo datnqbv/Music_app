@@ -25,35 +25,35 @@ const CommentScreen = () => {
       username: 'Sena',
       comment: 'This song is amazing! Love the beat!',
       time: '2h ago',
-      avatar: require('../assets/sena.jpg'), // Ảnh đại diện mẫu
+      avatar: require('../assets/sena.webp'), // Ảnh đại diện mẫu
     },
     {
       id: '2',
       username: 'Ông vua 36',
       comment: 'Great track, brings back memories.',
       time: '3h ago',
-      avatar: require('../assets/sena.jpg'),
+      avatar: require('../assets/sena.webp'),
     },
     {
       id: '3',
       username: 'Hắc hoàng đế',
       comment: 'Can’t stop listening to this!',
       time: '4h ago',
-      avatar: require('../assets/sena.jpg'),
+      avatar: require('../assets/sena.webp'),
     },
     {
       id: '4',
       username: 'Black King',
       comment: 'Such a vibe, perfect for my playlist.',
       time: '5h ago',
-      avatar: require('../assets/sena.jpg'),
+      avatar: require('../assets/sena.webp'),
     },
     {
       id: '5',
       username: 'Doanh Nhân 100 tỷ',
       comment: 'This artist never disappoints!',
       time: '6h ago',
-      avatar: require('../assets/sena.jpg'),
+      avatar: require('../assets/sena.webp'),
     },
   ];
 

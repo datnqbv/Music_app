@@ -132,7 +132,7 @@ const EditProfileScreen = () => {
         {/* Profile Picture */}
         <View style={styles.profilePictureSection}>
           <Image
-            source={avatar ? { uri: avatar } : require('../assets/mona.png')}
+            source={avatar ? { uri: avatar } : require('../assets/mona.webp')}
             style={styles.profilePicture}
           />
           <TouchableOpacity style={styles.changePictureButton} onPress={pickImage}>

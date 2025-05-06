@@ -134,7 +134,7 @@ const FavoriteScreen = ({ navigation }) => {
           {/* Header Image Section */}
           <View style={styles.headerImageContainer}>
             <Image 
-              source={require('../assets/music-banner.jpg')} 
+              source={require('../assets/music-banner.webp')} 
               style={styles.headerImage}
             />
             <View style={styles.headerOverlay}>

@@ -33,7 +33,7 @@ const QueueScreen = ({ route, navigation }) => {
         <Image
           source={song.image}
           style={styles.songImage}
-          defaultSource={require('../assets/mona.png')}
+          defaultSource={require('../assets/mona.webp')}
         />
       </View>
       <View style={styles.songInfo}>

@@ -130,7 +130,7 @@ const HomeScreen = () => {
           >
             <View style={styles.profileAvatar}>
               <Image
-                source={avatar ? { uri: avatar } : require('../assets/mona.png')}
+                source={avatar ? { uri: avatar } : require('../assets/mona.webp')}
                 style={styles.avatarImage}
                 resizeMode="cover"
               />
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   artistAvatar: {
-    width: 120,
+    width: 125,
     height: 120,
     borderRadius: 60,
     marginBottom: 12,

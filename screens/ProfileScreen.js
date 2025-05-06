@@ -119,7 +119,7 @@ const ProfileScreen = ({ navigation }) => {
         {/* Profile Info */}
         <View style={styles.profileInfo}>
           <Image
-            source={avatar ? { uri: avatar } : require('../assets/mona.png')}
+            source={avatar ? { uri: avatar } : require('../assets/mona.webp')}
             style={styles.profilePicture}
           />
           <Text style={styles.profileName}>{profileName}</Text>
